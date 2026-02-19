@@ -2,5 +2,8 @@
   "ai_provider": "ollama",
   "ollama_model": "llama3.1:8b",
   "theme": "Jarvis Blue",
-  "language": "English"
+  "language": "English",
+  "spotify_client_id": "bd2896db031549dba6e7b4982144ecaa",
+  "spotify_client_secret": "177e9d2f436a4554b4f3d219734dafb8",
+  "spotify_redirect_uri": "http://localhost:5000/callback"
 }

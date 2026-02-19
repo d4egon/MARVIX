@@ -6,31 +6,6 @@ let mainWindow;
 let pythonProcess;
 let tray;
 
-// Auto-install Python dependencies on first run
-function installPythonDependencies() {
-    return new Promise((resolve, reject) => {
-        console.log('Installing Python dependencies...');
-        const pipProcess = spawn('pip', ['install', '-r', 'requirements.txt']);
-        
-        pipProcess.stdout.on('data', (data) => {
-            console.log(`pip: ${data}`);
-        });
-        
-        pipProcess.stderr.on('data', (data) => {
-            console.error(`pip error: ${data}`);
-        });
-        
-        pipProcess.on('close', (code) => {
-            if (code === 0) {
-                console.log('Dependencies installed successfully');
-                resolve();
-            } else {
-                reject(new Error(`pip install failed with code ${code}`));
-            }
-        });
-    });
-}
-
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1200,
@@ -56,7 +31,7 @@ function createWindow() {
 }
 
 function createTray() {
-    tray = new Tray(path.join(__dirname, 'icon.png')); // You'll need to add an icon
+    tray = new Tray(path.join(__dirname, 'assets/icon.png')); // You'll need to add an icon
     
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Show Marvix', click: () => mainWindow.show() },
@@ -77,7 +52,7 @@ function createTray() {
 }
 
 function startPythonBackend() {
-    pythonProcess = spawn('python', ['jarvis_backend.py']);
+    pythonProcess = spawn('python', ['C:/MARVIX/backend/jarvis_backend.py']);
     
     pythonProcess.stdout.on('data', (data) => {
         console.log(`Python: ${data}`);
@@ -96,7 +71,6 @@ app.setLoginItemSettings({
 
 app.whenReady().then(async () => {
     try {
-        await installPythonDependencies();
         startPythonBackend();
         createTray();
         setTimeout(createWindow, 2000); // Wait for Python to start

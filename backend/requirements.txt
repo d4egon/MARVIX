@@ -1,14 +1,26 @@
-flask
-flask-cors
-requests
-pillow
-psutil
-sounddevice
-numpy
-openai-whisper
-scipy
-pyttsx3
-textblob
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
+# Minimal, non-locked dependency list for the backend.
+# Avoid exact '==' pins to reduce compatibility issues.
+# Note: install system FFmpeg and platform-specific PyTorch separately.
+
+Flask>=2.0
+Flask-Cors>=3.0
+requests>=2.28
+Pillow>=9.0
+psutil>=5.9
+sounddevice>=0.4
+soundfile>=0.12
+numpy>=1.24
+scipy>=1.8
+pydub>=0.25
+openai-whisper>=2023.10.1
+# Torch: install separately per OS/GPU (preferred via PyTorch wheels)
+torch
+pyttsx3>=2.90
+textblob>=0.17.1
+nltk>=3.8
+google-api-python-client>=2.70.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=1.0.0
+python-dotenv>=1.0.0
+tqdm>=4.65.0
+spotipy>=2.0.0

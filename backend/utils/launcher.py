@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 # Fallback-liste (udvid efter behov)
 FALLBACK_PATHS = {
@@ -21,42 +22,95 @@ FALLBACK_PATHS = {
     "teams": r"%LOCALAPPDATA%\Microsoft\Teams\current\Teams.exe",
     "code": r"%LOCALAPPDATA%\Programs\Microsoft VS Code\Code.exe",
 }
+def launch_app(app_name, app_paths=None):
+    """Launch an app by name using the provided app_paths mapping, a fallback table,
+    simple synonyms, or OS defaults.
 
-def launch_app(app_name, app_paths):
+    - `app_paths` is expected to be a dict mapping canonical keys -> exe path.
+    - Returns a short Danish status string.
+    """
     if not app_name:
         return "Intet app-navn angivet"
 
     app_key = app_name.lower().strip()
 
-    # 1. Præcist match i JSON
-    if app_key in app_paths:
-        exe_path = os.path.expandvars(app_paths[app_key])
-        exe_path = os.path.normpath(exe_path)
-        if os.path.exists(exe_path):
+    # Simple synonyms mapping (canonical -> alternatives)
+    SYNONYMS = {
+        "calculator": ["calc", "kalkulator", "lommeregner"],
+        "notepad": ["notesblok", "note", "notes", "notepad++", "notepadpp"],
+        "edge": ["microsoft edge", "edge browser", "ms edge", "msedge"],
+        "explorer": ["this pc", "file explorer", "dette pc"],
+        "chrome": ["google chrome", "chrome browser"],
+        "firefox": ["mozilla firefox", "firefox browser"],
+        "spotify": ["spotify app", "spotify music"],
+        "powershell": ["pwsh"],
+        "cmd": ["command prompt", "command prompt"],
+    }
+
+    # Reverse lookup: synonym -> canonical
+    synonym_lookup = {}
+    for canonical, alts in SYNONYMS.items():
+        synonym_lookup[canonical] = canonical
+        for a in alts:
+            synonym_lookup[a] = canonical
+
+    # Helper to attempt starting an exe path
+    def try_start(path):
+        expanded = os.path.expandvars(path)
+        normalized = os.path.normpath(expanded)
+        if os.path.exists(normalized):
             try:
-                os.startfile(exe_path)
-                print(f"JSON hit: {exe_path}")
+                os.startfile(normalized)
+                return True, normalized
+            except Exception as e:
+                print(f"Fejl ved start af {normalized}: {e}")
+        return False, normalized
+
+    # 1) Try exact key or synonym -> JSON mapping
+    if app_paths:
+        # direct
+        if app_key in app_paths:
+            ok, p = try_start(app_paths[app_key])
+            if ok:
                 return f"Åbner {app_name} fra JSON!"
-            except Exception as e:
-                print(f"JSON fejl: {e}")
 
-    # 2. Fallback-liste
+        # synonym -> canonical
+        canonical = synonym_lookup.get(app_key)
+        if canonical and canonical in app_paths:
+            ok, p = try_start(app_paths[canonical])
+            if ok:
+                return f"Åbner {app_name} ({canonical}) fra JSON!"
+
+        # also try keys whose aliases include app_key (in case app_paths contains alias keys)
+        if app_key in app_paths:
+            ok, p = try_start(app_paths[app_key])
+            if ok:
+                return f"Åbner {app_name} fra JSON!"
+
+    # 2) FALLBACK table using canonical lookup
+    fb_key = synonym_lookup.get(app_key, app_key)
+    if fb_key in FALLBACK_PATHS:
+        ok, p = try_start(FALLBACK_PATHS[fb_key])
+        if ok:
+            return f"Åbner {app_name} fra fallback!"
+
+    # Also try app_key directly in fallback (some keys are already plain)
     if app_key in FALLBACK_PATHS:
-        exe_path = os.path.expandvars(FALLBACK_PATHS[app_key])
-        exe_path = os.path.normpath(exe_path)
-        if os.path.exists(exe_path):
-            try:
-                os.startfile(exe_path)
-                print(f"Fallback hit: {exe_path}")
-                return f"Åbner {app_name} fra fallback!"
-            except Exception as e:
-                print(f"Fallback fejl: {e}")
+        ok, p = try_start(FALLBACK_PATHS[app_key])
+        if ok:
+            return f"Åbner {app_name} fra fallback!"
 
-    # 3. Direkte
+    # 3) Try launching common built-ins by name (PATH)
     try:
-        os.startfile(app_key)
-        print(f"Direkte: {app_key}")
-        return f"Prøver direkte: {app_name}"
+        subprocess.Popen(app_name, shell=True)
+        return f"Prøver at åbne '{app_name}'..."
     except Exception as e:
-        print(f"Direkte fejl: {e}")
-        return f"Kunne ikke åbne '{app_name}'"
+        print(f"Subprocess fejl: {e}")
+
+    # 4) Last resort: try with os.startfile on the raw name
+    try:
+        os.startfile(app_name)
+        return f"Forsøger at åbne {app_name} via startfile"
+    except Exception as e:
+        print(f"Startfile fallback fejl: {e}")
+        return f"Kunne ikke åbne '{app_name}'. Fejl: {str(e)}"

@@ -48,7 +48,7 @@ except FileNotFoundError:
     print("Warning: app_paths.json mangler — launcher bruger kun fallback")
 
 # Ollama config
-with open('config.json', 'r') as f:
+with open('C:/MARVIX/backend/config.json', 'r') as f:
     CONFIG = json.load(f)
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
