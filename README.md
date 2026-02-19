@@ -61,7 +61,9 @@ Spotify (), Google Calendar (), Gmail (), Google Drive (), GitHub ()
 
 
 ### STRUCTURE
+
 Marvix/
+
 ├── backend/                    # Alt Python/Flask-relateret (lokomotivet)
 
 │   ├── jarvis_backend.py       # Hoved Flask-app (starter server, loader plugins)
