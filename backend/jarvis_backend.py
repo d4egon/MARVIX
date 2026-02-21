@@ -51,6 +51,7 @@ except FileNotFoundError:
 CONFIG = {
     "ai_provider": "ollama",
     "ollama_model": "llama3.1:8b",
+    "ollama_model": "marvix-llama3.1-safe",
     "theme": "Jarvis Blue",
     "language": "English"
 }
@@ -66,6 +67,7 @@ except json.JSONDecodeError:
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 OLLAMA_MODEL = CONFIG.get('ollama_model', 'llama3.1:8b')
+OLLAMA_MODEL = CONFIG.get('ollama_model', 'marvix-llama3.1-16k')
 
 # Emotion engine
 emotion_engine = EmotionEngine()
@@ -241,7 +243,9 @@ def system():
         'ram_total': f"{mem.total / (1024**3):.1f} GB",
         'network_up': f"{net.bytes_sent / (1024**2):.1f} MB",
         'network_down': f"{net.bytes_recv / (1024**2):.1f} MB",
-        'uptime': "Aktiv"
+        'disk_used': f"{disk.used / (1024**3):.1f} GB",
+        'disk_total': f"{disk.total / (1024**3):.1f} GB",
+        'uptime': str(datetime.timedelta(seconds=int(time.time() - psutil.boot_time())))
     })
 
 @app.route('/api/emotion', methods=['GET'])

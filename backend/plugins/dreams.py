@@ -12,6 +12,7 @@ from utils.db_logger import DB_PATH
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 OLLAMA_MODEL = "llama3.1:8b"
+OLLAMA_MODEL = "marvix-llama3.1-safe"
 
 def get_last_dream():
     try:
@@ -90,6 +91,7 @@ def dream():
 
     # 4. TEMPERATURE (Scaled for D100)
     target_temp = round(min(2.6, max(0.1, (rolls['CHAOS'] / 40) - (rolls['ORDER'] / 50) + 0.8)), 2)
+    target_temp = round(min(1.2, max(0.1, (rolls['CHAOS'] / 40) - (rolls['ORDER'] / 50) + 0.8)), 2)
 
     prompt = f"""
 [FRAGMENTS OF ANOTHER REALITY]

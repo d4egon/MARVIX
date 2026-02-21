@@ -1,6 +1,7 @@
 {
   "ai_provider": "ollama",
   "ollama_model": "llama3.1:8b",
+  "ollama_model": "marvix-llama3.1-safe",
   "theme": "Jarvis Blue",
   "language": "English",
   "spotify_client_id": "bd2896db031549dba6e7b4982144ecaa",
