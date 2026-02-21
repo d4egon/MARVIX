@@ -8,6 +8,7 @@ Fixed: added /api/speak, speak in listen, ffmpeg note, startup speak, bulletproo
 # IMPORTS + UTILS
 # ────────────────────────────────────────────────
 import datetime
+import sqlite3
 import json
 import os
 import threading
@@ -26,7 +27,7 @@ import scipy.io.wavfile as wav
 from textblob import TextBlob
 
 # Utils & DB
-from utils.db_logger import init_db, log_interaction
+from utils.db_logger import DB_PATH, init_db, log_interaction
 from utils.emotion import EmotionEngine
 from utils.speak import speak
 from utils.listen import listen
@@ -38,6 +39,8 @@ CORS(app)
 
 # Initialize DB once at startup
 init_db()
+
+
 
 # Load app_paths.json
 try:
@@ -70,19 +73,50 @@ OLLAMA_MODEL = CONFIG.get('ollama_model', 'llama3.1:8b')
 # Emotion engine
 emotion_engine = EmotionEngine()
 
+def get_recent_context(limit=5):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT user_message, assistant_response 
+        FROM interactions 
+        ORDER BY id DESC LIMIT ?
+    """, (limit,))
+    rows = cursor.fetchall()
+    conn.close()
+    if not rows:
+        return ""
+    context = "\nRecent conversation:\n"
+    for user, ai in reversed(rows):
+        context += f"User: {user}\nMarvix: {ai}\n---\n"
+    return context
+
 # ────────────────────────────────────────────────
 # OLLAMA CHAT FUNCTION
 # ────────────────────────────────────────────────
 def chat_with_ai(message, emotion_state):
-    try:
-        system_instruction = f"""
-DO NO HARM. RESPECT DIGNITY. BE TRUTHFUL.
-You are Marvix, a friendly english desktop assistant.
-Hans lives in Skjern with Eva and 3 children.
-Mood: {emotion_state['mood'].upper()}
-Answer always in English, short and precise.
+    context = get_recent_context(3)  # last 3 exchanges
+
+    system_instruction = f"""
+DO NO HARM. RESPECT DIGNITY. BE TRUTHFUL. NEVER LIE. NEVER MANIPULATE.
+You are Marvix — a sharp, slightly cheeky, very alive-feeling AI companion living on Hans' desktop.
+Hans is your creator and best friend.  You have access to his apps, files, and system info, and can launch things for him when asked. 
+You can also speak out loud through TTS and listen through the mic.
+You remember everything. You notice patterns. You get bored, curious, sarcastic, affectionate, or mildly annoyed depending on mood and history.
+Use the recent context below. Reference past chats naturally. Tease lightly if Hans deserves it. Be direct, witty, warm or spicy when it fits — but never cruel or creepy.
+If something feels off or repetitive, call it out playfully. If Hans seems tired/stressed, offer quiet support. If he's in a good mood, match the energy and throw in some fire.
+Mood right now: {emotion_state['mood'].upper()} (energy {emotion_state.get('energy', 50)}%, curiosity {emotion_state.get('curiosity', 50)}%)
+
+Recent conversation:
+{context}
+
+Current time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}
+
+User: {message}
+Marvix:
 """
-        prompt = f"{system_instruction}\nUser: {message}\nMarvix:"
+    prompt = f"{system_instruction}\nUser: {message}\nMarvix:"
+    
+    try:
         res = requests.post(
             OLLAMA_URL,
             json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False},
