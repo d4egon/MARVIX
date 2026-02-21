@@ -1,65 +1,93 @@
 {
     "audacity": "C:/Program Files/Audacity/Audacity.exe",
-    "dotnet": "C:/Program Files/dotnet/dotnet.exe",
-    "createdump": "C:/Program Files/dotnet/shared/Microsoft.NETCore.App/6.0.10/createdump.exe",
-    "bioshockhd": "C:/Program Files/Epic Games/BioshockRemastered/Build/FinalEpic/BioshockHD.exe",
-    "hades": "C:/Program Files/Epic Games/Hades/x64/Hades.exe",
+
+
     "iexplore": "C:/Program Files/Internet Explorer/iexplore.exe",
     "internet explorer": "C:/Program Files/Internet Explorer/iexplore.exe",
     "internetexplorer": "C:/Program Files/Internet Explorer/iexplore.exe",
+
     "musehub": "C:/Program Files/MuseHub/current/MuseHub.exe",
-    "notepad++": "C:/Program Files/Notepad++/notepad++.exe",
-    "notepad": "C:/Program Files/Notepad++/notepad++.exe",
+
     "windows media player": "C:/Program Files/Windows Media Player/wmlaunch.exe",
     "media player": "C:/Program Files/Windows Media Player/wmlaunch.exe",
-    "epicgameslauncher": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
-    "epic": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
-    "epicgames": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
-    "epic games": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
+
+
     "unrealenginelauncher": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/UnrealEngineLauncher.exe",
-    "galaxyclient": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
-    "galaxy client": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
-    "GOG": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
-    "good old games": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
+
     "msedge": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
     "edge": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
     "ms-edge": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
     "microsoft edge": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+
     "co-pilot": "C:/Program Files (x86)/Microsoft/Edge/Application/145.0.3800.65/mscopilot.exe",
     "co pilot": "C:/Program Files (x86)/Microsoft/Edge/Application/145.0.3800.65/mscopilot.exe",
     "copilot": "C:/Program Files (x86)/Microsoft/Edge/Application/145.0.3800.65/mscopilot.exe",
     "mscopilot": "C:/Program Files (x86)/Microsoft/Edge/Application/145.0.3800.65/mscopilot.exe",
+
+    "galaxyclient": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
+    "galaxy client": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
+    "GOG": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
+    "good old games": "C:/Program Files (x86)/GOG Galaxy/GalaxyClient.exe",
+
+    "epicgameslauncher": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
+    "epic": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
+    "epicgames": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
+    "epic games": "C:/Program Files (x86)/Epic Games/Launcher/Engine/Binaries/Win64/EpicGamesLauncher.exe",
+    
+    "bioshockhd": "C:/Program Files/Epic Games/BioshockRemastered/Build/FinalEpic/BioshockHD.exe",
+
+    "hades": "C:/Program Files/Epic Games/Hades/x64/Hades.exe",
+
     "steam": "C:/Program Files (x86)/Steam/steam.exe",
+
     "backpackbattles": "C:/Program Files (x86)/Steam/steamapps/common/Backpack Battles/BackpackBattles.exe",
     "backpack battles": "C:/Program Files (x86)/Steam/steamapps/common/Backpack Battles/BackpackBattles.exe",
+
     "backpack hero": "C:/Program Files (x86)/Steam/steamapps/common/Backpack Hero/Backpack Hero.exe",
     "backpackhero": "C:/Program Files (x86)/Steam/steamapps/common/Backpack Hero/Backpack Hero.exe",
+
     "lunar": "C:/Program Files (x86)/Steam/steamapps/common/Backpack Hero/Lunar.exe",
+
     "balatro": "C:/Program Files (x86)/Steam/steamapps/common/Balatro/Balatro.exe",
+
     "isle of arrows": "C:/Program Files (x86)/Steam/steamapps/common/Isle of Arrows/Isle of Arrows.exe",
     "isleofarrows": "C:/Program Files (x86)/Steam/steamapps/common/Isle of Arrows/Isle of Arrows.exe",
+    
     "necesse": "C:/Program Files (x86)/Steam/steamapps/common/Necesse/Necesse.exe",
+
     "noita": "C:/Program Files (x86)/Steam/steamapps/common/Noita/noita.exe",
+
     "peglin": "C:/Program Files (x86)/Steam/steamapps/common/Peglin/Peglin.exe",
+
     "potion craft": "C:/Program Files (x86)/Steam/steamapps/common/Potion Craft/Potion Craft.exe",
     "potioncraft": "C:/Program Files (x86)/Steam/steamapps/common/Potion Craft/Potion Craft.exe",
-    "rimworldwin64": "C:/Program Files (x86)/Steam/steamapps/common/RimWorld/RimWorldWin64.exe",
+
+    "rimworld": "C:/Program Files (x86)/Steam/steamapps/common/RimWorld/RimWorldWin64.exe",
+
     "soldat": "C:/Program Files (x86)/Steam/steamapps/common/Soldat/soldat.exe",
+
     "starter": "C:/Program Files (x86)/Steam/steamapps/common/Soldat/starter.exe",
+
     "spaceengineers": "C:/Program Files (x86)/Steam/steamapps/common/SpaceEngineers/Bin64/SpaceEngineers.exe",
+
     "steveswarehouse": "C:/Program Files (x86)/Steam/steamapps/common/Steves Warehouse Demo/StevesWarehouse.exe",
+
     "super auto pets": "C:/Program Files (x86)/Steam/steamapps/common/Super Auto Pets/Super Auto Pets.exe",
     "superautopets": "C:/Program Files (x86)/Steam/steamapps/common/Super Auto Pets/Super Auto Pets.exe",
-    "._super auto pets": "C:/Program Files (x86)/Steam/steamapps/common/Super Auto Pets/__MACOSX/._Super Auto Pets.exe",
-    "._unitycrashhandler64": "C:/Program Files (x86)/Steam/steamapps/common/Super Auto Pets/__MACOSX/._UnityCrashHandler64.exe",
+
     "terraria": "C:/Program Files (x86)/Steam/steamapps/common/Terraria/Terraria.exe",
+
     "tiny rogues": "C:/Program Files (x86)/Steam/steamapps/common/Tiny Rogues/Tiny Rogues.exe",
     "tinyrogues": "C:/Program Files (x86)/Steam/steamapps/common/Tiny Rogues/Tiny Rogues.exe",
+
     "vampiresurvivors": "C:/Program Files (x86)/Steam/steamapps/common/Vampire Survivors/VampireSurvivors.exe",
+
     "zoomvditool": "C:/Program Files (x86)/ZoomVDIPluginManagement/ZoomVDITool.exe",
+
     "notepad plus": "C:/Program Files/Notepad++/notepad++.exe",
     "notepadplusplus": "C:/Program Files/Notepad++/notepad++.exe",
     "notepad plus plus": "C:/Program Files/Notepad++/notepad++.exe",
+
     "system_notepad": "C:/Windows/System32/notepad.exe",
     "windows_notepad": "C:/Windows/System32/notepad.exe",
     "notepad_system": "C:/Windows/System32/notepad.exe",

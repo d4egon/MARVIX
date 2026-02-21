@@ -19,22 +19,17 @@
         
         body {
             font-family: 'Courier New', 'Consolas', monospace;
-            
-        background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
-        color: #000000;
-    
+            background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+            color: #000000;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
         
-        
-        
         .header {
             padding: 20px;
             text-align: center;
             border-bottom: 2px solid #333;
-            
             backdrop-filter: blur(10px);
             position: relative;
             z-index: 10;
@@ -44,7 +39,6 @@
             font-size: 2.5em;
             font-weight: 300;
             letter-spacing: 4px;
-            
         }
         
         .header p {
@@ -65,7 +59,6 @@
             padding: 15px 20px;
             border-radius: 15px;
             max-width: 70%;
-            
             position: relative;
             animation: fadeIn 0.3s ease-in;
         }
@@ -79,24 +72,11 @@
             background: #007bff;
             margin-left: auto;
             color: white;
-            
         }
         
         .message.assistant {
             background: #f1f1f1;
             border: 1px solid #ddd;
-            
-        }
-        
-        .message::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 3px;
-            height: 100%;
-            background: transparent;
-            
         }
         
         .input-container {
@@ -115,7 +95,6 @@
             color: #000;
             font-size: 1em;
             font-family: 'Courier New', monospace;
-            
             transition: all 0.3s ease;
         }
         
@@ -136,7 +115,6 @@
             font-family: 'Courier New', monospace;
             text-transform: uppercase;
             letter-spacing: 1px;
-            
             transition: all 0.3s ease;
         }
         
@@ -152,40 +130,43 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 5px;
-            font-size: 0.9em;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            color: #00ff88;
+            font-size: 14px;
+            line-height: 1.5;
+            border: 1px solid #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+            min-width: 260px;
+            z-index: 1000;
+            pointer-events: none;
         }
         
         .emotion-indicator {
             position: fixed;
             top: 20px;
             left: 20px;
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 10px;
-            font-size: 0.85em;
+            padding: 18px 24px;
+            background: rgba(0, 0, 0, 0.92);
+            border-radius: 16px;
+            font-family: 'Courier New', monospace;
+            color: #ffffff;
+            font-size: 15px;
+            line-height: 1.6;
             border: 2px solid var(--emotion-color, #00d4ff);
-            box-shadow: 0 0 20px var(--emotion-color, #00d4ff);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.45);
+            min-width: 280px;
             z-index: 1001;
-            backdrop-filter: blur(10px);
-            transition: all 0.5s ease;
+            pointer-events: none;
         }
         
         .emotion-indicator .mood {
-            font-size: 1.2em;
+            font-size: 1.5em;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: var(--emotion-color, #00d4ff);
-            text-shadow: 0 0 10px var(--emotion-color, #00d4ff);
-        }
-        
-        .emotion-indicator .stats {
-            margin-top: 8px;
-            opacity: 0.8;
-            font-size: 0.9em;
         }
         
         .emotion-bar {
@@ -194,6 +175,7 @@
             border-radius: 2px;
             overflow: hidden;
             margin: 5px 0;
+            transition: all 0.3s ease;
         }
         
         .emotion-bar-fill {
@@ -205,97 +187,55 @@
     </style>
 </head>
 <body>
-    
-    
-    <div class="emotion-indicator" id="emotionIndicator" style="
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    padding: 18px 24px;
-    background: rgba(0, 0, 0, 0.92);
-    border-radius: 16px;
-    font-family: 'Courier New', monospace;
-    color: #ffffff;
-    font-size: 15px;
-    line-height: 1.6;
-    border: 2px solid var(--emotion-color, #00d4ff);
-    box-shadow: 0 0 25px rgba(0, 212, 255, 0.45);
-    min-width: 280px;
-    z-index: 1001;
-    backdrop-filter: none; /* no blur */
-    pointer-events: none;
-">
-    <div class="mood" id="moodText" style="font-size: 1.5em; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;">
-        INITIALIZING...
+    <div class="emotion-indicator" id="emotionIndicator">
+        <div class="mood" id="moodText">INITIALIZING...</div>
+        <div class="stats">
+            <div>Energy: <span id="energyValue">--</span>%</div>
+            <div class="emotion-bar"><div class="emotion-bar-fill" id="energyBar"></div></div>
+            <div>Curiosity: <span id="curiosityValue">--</span>%</div>
+            <div class="emotion-bar"><div class="emotion-bar-fill" id="curiosityBar"></div></div>
+        </div>
     </div>
-    <div class="stats">
-        <div>Energy: <span id="energyValue">--</span>%</div>
-        <div class="emotion-bar"><div class="emotion-bar-fill" id="energyBar"></div></div>
-        <div>Curiosity: <span id="curiosityValue">--</span>%</div>
-        <div class="emotion-bar"><div class="emotion-bar-fill" id="curiosityBar"></div></div>
-    </div>
-</div>
-    
+
     <div class="header">
         <h1>Marvix</h1>
         <p>"Sentient" AI Desktop Assistant</p>
     </div>
-    
+
     <div class="chat-container" id="chat"></div>
-    
-    <div class="system-stats" id="stats" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 20px;
-    background: rgba(0, 0, 0, 0.85);
-    border-radius: 12px;
-    font-family: 'Courier New', monospace;
-    color: #00ff88;
-    font-size: 14px;
-    line-height: 1.5;
-    border: 1px solid #00ff88;
-    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
-    min-width: 260px;
-    z-index: 1000;
-    backdrop-filter: none; /* removed blur */
-    pointer-events: none;
-	">
-		<strong>SYSTEM STATS</strong><br>
-		CPU: <span id="cpu"></span><br>
-		RAM: <span id="ram"></span><br>
-		Disk: <span id="disk"></span><br>
-		Network Up/Down: <span id="net"></span><br>
-		Uptime: <span id="uptime"></span>
-	</div>
-    
+
+    <div class="system-stats" id="stats">
+        <strong>SYSTEM STATS</strong><br>
+        CPU: <span id="cpu">--</span><br>
+        RAM: <span id="ram">--</span><br>
+        Disk: <span id="disk">--</span><br>
+        Network Up/Down: <span id="net">--</span><br>
+        Uptime: <span id="uptime">--</span>
+    </div>
+
     <div class="input-container">
-		<button id="mic-btn" onclick="startListening()">🎤 Voice</button>
-    
-		<input type="text" id="input" placeholder="Ask me anything..." sendMessage()">
-    
-		<button onclick="sendMessage()">Send</button>
-	</div>
-    
+        <button id="mic-btn" onclick="startListening()">🎤 Voice</button>
+        <input type="text" id="input" placeholder="Spørg mig hvad som helst..." autofocus oninput="this.value = this.value;">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
     <script>
     const API_BASE = 'http://127.0.0.1:5000/api';
-    let currentEmotion = { color: '#00d4ff', animation: 'pulse-normal' };
 
     function updateEmotionDisplay(emotion) {
-    currentEmotion = emotion;
-    const root = document.documentElement;
-    root.style.setProperty('--emotion-color', emotion.color);
+        const root = document.documentElement;
+        root.style.setProperty('--emotion-color', emotion.color);
 
-    document.getElementById('moodText').textContent = emotion.mood.toUpperCase();
-    document.getElementById('energyValue').textContent = emotion.energy;
-    document.getElementById('curiosityValue').textContent = emotion.curiosity;
-    document.getElementById('energyBar').style.width = emotion.energy + '%';
-    document.getElementById('curiosityBar').style.width = emotion.curiosity + '%';
+        document.getElementById('moodText').textContent = emotion.mood.toUpperCase();
+        document.getElementById('energyValue').textContent = emotion.energy;
+        document.getElementById('curiosityValue').textContent = emotion.curiosity;
+        document.getElementById('energyBar').style.width = `${emotion.energy}%`;
+        document.getElementById('curiosityBar').style.width = `${emotion.curiosity}%`;
 
-    const indicator = document.getElementById('emotionIndicator');
-    indicator.style.borderColor = emotion.color;
-    indicator.style.boxShadow = `0 0 25px ${emotion.color}55`; // semi-transparent glow
-}
+        const indicator = document.getElementById('emotionIndicator');
+        indicator.style.borderColor = emotion.color;
+        indicator.style.boxShadow = `0 0 25px ${emotion.color}55`;
+    }
 
     async function sendMessage() {
         const input = document.getElementById('input');
@@ -305,56 +245,51 @@
         addMessage(message, 'user');
         input.value = '';
 
-        // Check for launch command first
         const lowerMsg = message.toLowerCase();
         if (lowerMsg.startsWith('open ')) {
             const app = message.slice(5).trim();
-            console.log("Detected launch command for:", app); // debug in browser console (F12)
+            console.log("Launch detected:", app);
 
             try {
-                const response = await fetch(API_BASE + '/launch', {
+                const res = await fetch(API_BASE + '/launch', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ app: app })
+                    body: JSON.stringify({ app })
                 });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                addMessage(data.result || "Launch attempted — check if it opened!", 'assistant');
-                console.log("Launch result:", data.result); // debug
-            } catch (error) {
-                console.error("Launch fetch error:", error);
-                addMessage(`Launch failed: ${error.message} (check Python console)`, 'assistant');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                addMessage(data.result || "Åbner...", 'assistant');
+            } catch (err) {
+                console.error("Launch error:", err);
+                addMessage(`Launch error: ${err.message}`, 'assistant');
             }
-            return; // stop here — don't send to chat endpoint
+            return;
         }
 
-        // Normal chat if not a launch command
+        // Normal chat with loading indicator
+        const loadingId = addMessage("Thinking...", 'assistant');
+
         try {
-            const response = await fetch(API_BASE + '/chat', {
+            const res = await fetch(API_BASE + '/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
             });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            if (!response.ok) {
-                throw new Error(`Chat HTTP ${response.status}`);
-            }
+            const data = await res.json();
 
-            const data = await response.json();
+            // Remove loading message
+            const loadingEl = document.querySelector(`.message[data-id="${loadingId}"]`);
+            if (loadingEl) loadingEl.remove();
+
             addMessage(data.response, 'assistant');
 
-            if (data.emotion) {
-                updateEmotionDisplay(data.emotion);
-            }
+            if (data.emotion) updateEmotionDisplay(data.emotion);
 
-            speak(data.response);
-        } catch (error) {
-            console.error("Chat error:", error);
-            addMessage('Error: ' + error.message, 'assistant');
+        } catch (err) {
+            console.error("Chat error:", err);
+            addMessage(`Error: ${err.message}`, 'assistant');
         }
     }
 
@@ -363,81 +298,101 @@
         const div = document.createElement('div');
         div.className = `message ${role}`;
         div.textContent = text;
+        const id = Date.now().toString();
+        div.dataset.id = id;
         chat.appendChild(div);
         chat.scrollTop = chat.scrollHeight;
+        return id;
     }
 
     async function startListening() {
-    const voiceBtn = document.querySelector('button[onclick="startListening()"]');
-    const originalText = voiceBtn.textContent;
-    
-    try {
-        // Visuel feedback: Gør knappen rød og skift tekst
-        voiceBtn.style.background = "#ff4444";
-        voiceBtn.textContent = "🔴 LISTENING...";
-        
-        const response = await fetch(API_BASE + '/listen', { method: 'POST' });
-        const data = await response.json();
-        
-        if (data.text) {
-            document.getElementById('input').value = data.text;
-            sendMessage();
+        const btn = document.getElementById('mic-btn');
+        const origText = btn.textContent;
+
+        btn.style.background = "#ff4444";
+        btn.style.boxShadow = "0 0 15px #ff4444";
+        btn.textContent = "🔴 Listening...";
+
+        try {
+            const res = await fetch(API_BASE + '/listen', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.text) {
+                document.getElementById('input').value = data.text;
+                sendMessage();
+            }
+        } catch (err) {
+            console.error("Voice error:", err);
+            addMessage("Voice error: " + err.message, 'assistant');
+        } finally {
+            btn.style.background = "#007bff";
+            btn.style.boxShadow = "none";
+            btn.textContent = "🎤 Voice";
         }
-    } catch (err) {
-        console.error("Voice listen error:", err);
-    } finally {
-        // Nulstil knappen uanset hvad
-        voiceBtn.style.background = "#007bff";
-        voiceBtn.textContent = originalText;
     }
-}
 
     async function speak(text) {
+        if (!text?.trim()) {
+            console.warn("No text to speak");
+            return;
+        }
+
+        console.log("→ TTS:", text.substring(0, 60) + (text.length > 60 ? '...' : ''));
+
         try {
-            await fetch(API_BASE + '/speak', {
+            const res = await fetch(API_BASE + '/speak', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text })
             });
+
+            if (!res.ok) {
+                const errText = await res.text().catch(() => 'Unknown error');
+                throw new Error(`HTTP ${res.status} - ${errText}`);
+            }
+
+            console.log("TTS OK");
         } catch (err) {
             console.error("Speak error:", err);
+            addMessage(`[TTS error: ${err.message}]`, 'assistant');
         }
     }
 
     // System stats polling
     setInterval(async () => {
-		try{
-			const response = await fetch(API_BASE + '/system');
-			const stats = await response.json();
-			document.getElementById('cpu').textContent = stats.cpu_percent;
-			document.getElementById('ram').textContent = stats.ram_used + ' / ' + stats.ram_total;
-			document.getElementById('disk').textContent = stats.disk_used + ' / ' + stats.disk_total;
-			document.getElementById('net').textContent = stats.network_up + ' / ' + stats.network_down;
-			document.getElementById('uptime').textContent = stats.uptime;
-		} catch (err) {
-			console.error("Stats error:", err);
-		}
-	}, 2000);
+        try {
+            const res = await fetch(API_BASE + '/system');
+            const stats = await res.json();
+            document.getElementById('cpu').textContent = stats.cpu_percent;
+            document.getElementById('ram').textContent = stats.ram_used + ' / ' + stats.ram_total;
+            document.getElementById('disk').textContent = stats.disk_used + ' / ' + stats.disk_total;
+            document.getElementById('net').textContent = stats.network_up + ' / ' + stats.network_down;
+            document.getElementById('uptime').textContent = stats.uptime;
+        } catch (err) {
+            console.error("Stats error:", err);
+        }
+    }, 2000);
 
-    // Emotion init & polling
+    // Emotion polling
     fetch(API_BASE + '/emotion')
         .then(r => r.json())
-        .then(emotion => updateEmotionDisplay(emotion))
+        .then(updateEmotionDisplay)
         .catch(() => {});
 
     setInterval(() => {
         fetch(API_BASE + '/emotion')
             .then(r => r.json())
-            .then(emotion => updateEmotionDisplay(emotion))
+            .then(updateEmotionDisplay)
             .catch(() => {});
     }, 5000);
 
-    // Enter key sends message
-    document.getElementById('input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    // Enter key handler
+    document.getElementById('input').addEventListener('keypress', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             sendMessage();
         }
     });
-</script>
+    </script>
 </body>
 </html>

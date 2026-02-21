@@ -46,7 +46,7 @@ python --version
 echo.
 echo 3. Installing/updating dependencies...
 cd /d "%MARVIX_ROOT%\backend"
-pip install -r C:\MARVIX\backend\requirements.txt --quiet --upgrade
+pip install -r requirements.txt --quiet --upgrade
 
 echo.
 echo 4. Starting backend (Flask)...

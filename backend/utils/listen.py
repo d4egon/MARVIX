@@ -1,3 +1,5 @@
+# backend/utils/listen.py
+import os
 import sounddevice as sd
 import numpy as np
 import whisper
@@ -14,7 +16,7 @@ def listen():
     silent_chunks = 0
     recording = []
 
-    print("Marvix lytter...")
+    print("Marvix is listening...")
     with sd.InputStream(samplerate=fs, channels=1) as stream:
         while True:
             data, overflowed = stream.read(chunk_size)
@@ -32,10 +34,15 @@ def listen():
     audio_data = np.concatenate(recording, axis=0)
     wav.write('temp_audio.wav', fs, audio_data)
 
-    print("Behandler lyd...")
+    print("Processing audio...")
     try:
         result = model.transcribe('temp_audio.wav', fp16=False)
-        return result['text'].strip()
+        text = result['text'].strip()
+        print(f"Transcribed: '{text}'")  # ← debug
+        return text
     except Exception as e:
-        print(f"Whisper fejl: {e}")
+        print(f"Whisper error: {e}")
         return ""
+    finally:
+        if os.path.exists('temp_audio.wav'):
+            os.remove('temp_audio.wav')

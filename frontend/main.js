@@ -1,3 +1,4 @@
+// frontend/main.js
 const { app, BrowserWindow, Tray, Menu } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -19,8 +20,7 @@ function createWindow() {
     });
 
     mainWindow.loadFile('index.html');
-    
-    
+
     // Hide instead of close
     mainWindow.on('close', (event) => {
         if (!app.isQuitting) {
@@ -31,8 +31,8 @@ function createWindow() {
 }
 
 function createTray() {
-    tray = new Tray(path.join(__dirname, 'assets/icon.png')); // You'll need to add an icon
-    
+    tray = new Tray(path.join(__dirname, 'assets/icon.png')); // Add an icon file
+
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Show Marvix', click: () => mainWindow.show() },
         { label: 'Hide', click: () => mainWindow.hide() },
@@ -42,22 +42,26 @@ function createTray() {
             app.quit();
         }}
     ]);
-    
+
     tray.setToolTip('Marvix');
     tray.setContextMenu(contextMenu);
-    
+
     tray.on('click', () => {
         mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
     });
 }
 
 function startPythonBackend() {
+    // Option 1: Absolute path (most reliable)
     pythonProcess = spawn('python', ['C:/MARVIX/backend/jarvis_backend.py']);
     
+    // Option 2: Relative from frontend folder
+    // pythonProcess = spawn('python', ['../backend/jarvis_backend.py']);
+
     pythonProcess.stdout.on('data', (data) => {
         console.log(`Python: ${data}`);
     });
-    
+
     pythonProcess.stderr.on('data', (data) => {
         console.error(`Python Error: ${data}`);
     });
@@ -73,10 +77,9 @@ app.whenReady().then(async () => {
     try {
         startPythonBackend();
         createTray();
-        setTimeout(createWindow, 2000); // Wait for Python to start
+        setTimeout(createWindow, 2000);
     } catch (error) {
         console.error('Setup failed:', error);
-        // Create window anyway to show error
         createWindow();
     }
 });

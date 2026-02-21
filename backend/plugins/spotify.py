@@ -20,7 +20,7 @@ def play_track(track_name):
     if results['tracks']['items']:
         track_uri = results['tracks']['items'][0]['uri']
         sp.start_playback(uris=[track_uri])
-        return f"Afspiller {track_name} på Spotify."
-    return "Ingen track fundet."
+        return f"Playing {track_name} on Spotify."
+    return "No track found."
 
 # Add more: pause, next, etc.

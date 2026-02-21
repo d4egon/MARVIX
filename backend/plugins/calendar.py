@@ -9,7 +9,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 def get_calendar_service():
     creds = None
-    # Token.json gemmer dine login-oplysninger efter første gang
+    # Token.json saves your login session, so you don't have to log in every time
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     
@@ -17,7 +17,7 @@ def get_calendar_service():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # I din google_calendar.py
+            # In your google_calendar.py
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         with open('token.json', 'w') as token:
@@ -27,8 +27,8 @@ def get_calendar_service():
 
 def add_event(summary, start_time_str):
     """
-    summary: Overskrift (f.eks. 'Fysioterapi')
-    start_time_str: Tidspunkt i formatet '2026-02-20T10:00:00'
+    summary: Headline (i.e. 'Physiotherapist')
+    start_time_str: Time in format '2026-02-20T10:00:00'
     """
     service = get_calendar_service()
     
@@ -40,6 +40,6 @@ def add_event(summary, start_time_str):
 
     try:
         event = service.events().insert(calendarId='primary', body=event).execute()
-        return f"Success: Begivenhed '{summary}' er oprettet!"
+        return f"Success: Event '{summary}' created!"
     except Exception as e:
-        return f"Fejl: Systemet kunne ikke oprette begivenheden. {str(e)}"
+        return f"Error: System could not create the event. {str(e)}"
