@@ -1,6 +1,5 @@
 {
   "ai_provider": "ollama",
-  "ollama_model": "llama3.1:8b",
   "ollama_model": "marvix-llama3.1-safe",
   "theme": "Jarvis Blue",
   "language": "English",
