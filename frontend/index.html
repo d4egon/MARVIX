@@ -5,70 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marvix</title>
     <style>
-        /* Erstat din eksisterende <style> med denne for bedre layout */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Courier New', monospace;
-            background: #ffffff;
-            color: #000;
-            height: 100vh;
-            display: flex; /* Aktiver flexbox layout */
-            overflow: hidden;
-        }
+    body {
+        font-family: 'Courier New', monospace;
+        background: #050505; /* Near black for maximum eye relief */
+        color: #e0e0e0;
+        height: 100vh;
+        display: flex;
+        overflow: hidden;
+    }
 
-        /* Venstre side: Chatten */
-        .chat-section {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            border-right: 2px solid #333;
-        }
+    .chat-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: #0a0a0c;
+        border-right: 1px solid #1a1a1c;
+    }
 
-        /* Højre side: Marvix Vision & Stats */
-        .sidebar {
-            width: 320px;
-            background: #0a0a0c;
-            color: #fff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-        }
+    .header {
+        padding: 15px 20px;
+        background: #0a0a0c;
+        border-bottom: 1px solid #1a1a1c;
+    }
 
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            background: #f9f9f9;
-        }
+    .header h1 { color: #00d4ff; font-size: 1.5rem; }
+    .header p { color: #555; font-size: 0.8rem; }
 
-        /* Videoen bliver nu lille og pæn i sidebaren */
-        .marvix-vision-container {
-            width: 100%;
-            border: 2px solid #00d4ff;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #000;
-        }
+    .chat-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #050505; /* Black chat background */
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        scroll-behavior: smooth;
+    }
 
-        /* De flydende kasser (stats og emotion) gøres statiske i sidebaren */
-        .system-stats, .emotion-indicator {
-            position: static !important; /* Fjern 'fixed' så de bliver i sidebaren */
-            width: 100% !important;
-            min-width: unset !important;
-            margin-bottom: 10px;
-        }
+    /* Message Bubbles */
+    .user-message {
+        align-self: flex-end;
+        background: #004080; /* Deep blue */
+        color: #ffffff;
+        padding: 12px 18px;
+        border-radius: 18px 18px 4px 18px;
+        max-width: 75%;
+        border: 1px solid #0056b3;
+    }
 
-        .input-container {
-            padding: 20px;
-            background: #fff;
-            border-top: 2px solid #333;
-            display: flex;
-            gap: 10px;
-        }
+    .marvix-message {
+        align-self: flex-start;
+        background: #161618; /* Dark grey */
+        color: #00d4ff;     /* Jarvis Blue */
+        padding: 12px 18px;
+        border-radius: 18px 18px 18px 4px;
+        max-width: 75%;
+        border: 1px solid #2a2a2e;
+    }
+
+    .input-container {
+        padding: 16px;
+        background: #0a0a0c;
+        border-top: 1px solid #1a1a1c;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    #input {
+        flex: 1;
+        padding: 12px;
+        background: #161618;
+        color: #fff;
+        border: 1px solid #333;
+        border-radius: 8px;
+        outline: none;
+    }
+
+    #input:focus { border-color: #00d4ff; }
+
+    /* Buttons */
+    button {
+        padding: 10px 18px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    #mic-btn { background: #331111; color: #ff4444; border: 1px solid #662222; }
+    #send-btn { background: #004080; color: white; }
+    .btn-camera { background: #1a1a1c; color: #00d4ff; border: 1px solid #00d4ff; }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 320px;
+        background: #050505;
+        color: #fff;
+        padding: 20px;
+        border-left: 1px solid #1a1a1c;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .marvix-vision-container {
+        border: 1px solid #00d4ff;
+        border-radius: 8px;
+        background: #000;
+        padding: 5px;
+    }
+
+    .system-stats h3 { color: #00d4ff; margin-bottom: 10px; font-size: 0.9rem; }
+    .system-stats p { color: #aaa; font-size: 0.8rem; margin-bottom: 5px; }
+    .system-stats span { color: #00d4ff; }
+</style>
     </style>
 </head>
 <body>
@@ -77,20 +133,21 @@
             <h1>Marvix</h1>
             <p>"Sentient" AI Desktop Assistant</p>
         </div>
-
+        
         <div class="chat-container" id="chat"></div>
 
         <div class="input-container">
+            <button id="cameraToggle" class="btn-camera" onclick="toggleMarvixEyes()">📷 Camera: ON</button>
             <button id="mic-btn" onclick="startListening()">🎤 Voice</button>
-            <input type="text" id="input" placeholder="Spørg mig om noget..." autofocus>
-            <button onclick="sendMessage()">Send</button>
+            <input type="text" id="input" placeholder="Type here..." autofocus>
+            <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
     </div>
-
+    
     <div class="sidebar">
         <div class="marvix-vision-container">
-            <h3 style="color: #00d4ff; font-size: 0.7em; padding: 5px;">MARVIX LIVE FEED</h3>
-            <img id="liveFeed" src="http://127.0.0.1:5000/video_feed" style="width: 100%;">
+            <h3>MARVIX LIVE FEED</h3>
+            <img id="liveFeed" src="http://127.0.0.1:5000/video_feed" style="width:100%;">
         </div>
 
         <div class="emotion-indicator" id="emotionIndicator">
@@ -101,98 +158,117 @@
             </div>
         </div>
 
-        <div class="system-stats" id="stats">
-            <strong>SYSTEM MONITOR</strong><br>
-            CPU: <span id="cpu">--</span><br>
-            RAM: <span id="ram">--</span><br>
-            Uptime: <span id="uptime">--</span>
+        <div class="system-stats" id="systemStats">
+            <h3>SYSTEM MONITOR</h3>
+            <p>CPU: <span id="cpu">--</span></p>
+            <p>RAM: <span id="ram">--</span></p>
+            <p>Disk: <span id="disk">--</span></p>
+            <p>Net: <span id="net">--</span></p>
+            <p>Uptime: <span id="uptime">--</span></p>
+        </div>
+
+        <div id="marvix-status-hud" style="
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 150px;
+            padding: 10px;
+            background: rgba(0, 10, 20, 0.7);
+            border-right: 3px solid #00d4ff;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            color: #00d4ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            pointer-events: none;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        ">
+            <div style="font-size: 0.6rem; opacity: 0.6; margin-bottom: 4px;">System State</div>
+            <div id="status-text" style="font-weight: bold; text-shadow: 0 0 8px #00d4ff;">IDLE</div>
         </div>
     </div>
-
     <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-theme');
+            const isDark = document.body.classList.contains('dark-theme');
+            localStorage.setItem('marvix-theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-toggle').innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+        }
     const API_BASE = 'http://127.0.0.1:5000/api';
+        let currentAiDiv = null;
 
-    function updateEmotionDisplay(emotion) {
-        const root = document.documentElement;
-        root.style.setProperty('--emotion-color', emotion.color);
-
-        document.getElementById('moodText').textContent = emotion.mood.toUpperCase();
-        document.getElementById('energyValue').textContent = emotion.energy;
-        document.getElementById('curiosityValue').textContent = emotion.curiosity;
-        document.getElementById('energyBar').style.width = `${emotion.energy}%`;
-        document.getElementById('curiosityBar').style.width = `${emotion.curiosity}%`;
-
-        const indicator = document.getElementById('emotionIndicator');
-        indicator.style.borderColor = emotion.color;
-        indicator.style.boxShadow = `0 0 25px ${emotion.color}55`;
-    }
+        function addMessage(sender, text = '') {
+            const chat = document.getElementById('chat');
+            const div = document.createElement('div');
+            // Using 'marvix-message' for the assistant to match your new CSS
+            div.className = sender === 'user' ? 'user-message' : 'marvix-message';
+            div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'MARVIX'}:</strong> ${text}`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return div;
+        }
 
     async function sendMessage() {
         const input = document.getElementById('input');
         const message = input.value.trim();
         if (!message) return;
 
-        addMessage(message, 'user');
-        input.value = '';
-
-        const lowerMsg = message.toLowerCase();
-        if (lowerMsg.startsWith('open ')) {
-            const app = message.slice(5).trim();
-            console.log("Launch detected:", app);
-
-            try {
-                const res = await fetch(API_BASE + '/launch', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ app })
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                addMessage(data.result || "Åbner...", 'assistant');
-            } catch (err) {
-                console.error("Launch error:", err);
-                addMessage(`Launch error: ${err.message}`, 'assistant');
-            }
-            return;
-        }
-
-        // Normal chat with loading indicator
-        const loadingId = addMessage("Thinking...", 'assistant');
+        // 1. INSTANTLY show your message and clear input for better UX
+        addMessage('user', message);
+        input.value = ''; 
 
         try {
-            const res = await fetch(API_BASE + '/chat', {
+            const response = await fetch(API_BASE + '/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
             });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            const data = await res.json();
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-            // Remove loading message
-            const loadingEl = document.querySelector(`.message[data-id="${loadingId}"]`);
-            if (loadingEl) loadingEl.remove();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let aiDiv = null;
+            let fullResponseText = ""; // To track the whole message for TTS
 
-            addMessage(data.response, 'assistant');
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-            if (data.emotion) updateEmotionDisplay(data.emotion);
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
 
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.slice(6).trim();
+                        if (dataStr === '[DONE]') {
+                            // Optional: Trigger speak() when finished if you want audio
+                            // speak(fullResponseText); 
+                            break;
+                        }
+
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.token) {
+                                if (!aiDiv) {
+                                    aiDiv = addMessage('marvix', ''); // Corrected sender name
+                                }
+                                aiDiv.innerHTML += data.token;
+                                fullResponseText += data.token;
+                                document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+                            }
+                        } catch (e) {
+                            console.error("Parsing error on chunk:", dataStr);
+                        }
+                    }
+                }
+            }
         } catch (err) {
             console.error("Chat error:", err);
-            addMessage(`Error: ${err.message}`, 'assistant');
+            addMessage('marvix', 'My circuits are slightly crossed: ' + err.message);
         }
-    }
-
-    function addMessage(text, role) {
-        const chat = document.getElementById('chat');
-        const div = document.createElement('div');
-        div.className = `message ${role}`;
-        div.textContent = text;
-        const id = Date.now().toString();
-        div.dataset.id = id;
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-        return id;
     }
 
     async function startListening() {
@@ -221,6 +297,44 @@
         }
     }
 
+        // Simple toggle function
+    async function handleCameraToggle(isEnabled) {
+        const response = await fetch('http://127.0.0.1:5000/api/camera/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enable: isEnabled })
+        });
+        // Logic to hide/show the <img src="/video_feed" /> element
+    }
+
+    let cameraActive = true;
+
+async function toggleMarvixEyes() {
+    const btn = document.getElementById('cameraToggle');
+    cameraActive = !cameraActive;
+
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/camera/toggle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enable: cameraActive })
+        });
+
+        if (response.ok) {
+            btn.innerText = cameraActive ? "📷 Camera: ON" : "🚫 Camera: OFF";
+            btn.style.backgroundColor = cameraActive ? "#007bff" : "#dc3545";
+            
+            // Toggle the video feed visibility
+            const videoFeed = document.querySelector('.marvix-live-feed img');
+            if (videoFeed) {
+                videoFeed.style.display = cameraActive ? "block" : "none";
+            }
+        }
+    } catch (error) {
+        console.error("Failed to toggle Marvix's eyes:", error);
+    }
+}
+
     async function speak(text) {
         if (!text?.trim()) {
             console.warn("No text to speak");
@@ -247,6 +361,38 @@
             addMessage(`[TTS error: ${err.message}]`, 'assistant');
         }
     }
+
+    
+    // Funktion der henter status hvert sekund
+    async function updateMarvixStatus() {
+        try {
+            const res = await fetch('http://127.0.0.1:5000/api/status');
+            const data = await res.json();
+            const statusElement = document.getElementById('status-text');
+            const hud = document.getElementById('marvix-status-hud');
+            
+            statusElement.innerText = data.status;
+
+            // Skift farve baseret på hvad han laver
+            if (data.status === "Meditating") {
+                hud.style.borderRightColor = "#bc13fe"; // Lilla for meditation
+                statusElement.style.color = "#bc13fe";
+            } else if (data.status === "Thinking..") {
+                hud.style.borderRightColor = "#ffcc00"; // Gul for tankevirksomhed
+                statusElement.style.color = "#ffcc00";
+            } else if (data.status === "Sleeping" || data.status === "Dreaming") {
+                hud.style.borderRightColor = "#00ff88"; // Grøn for søvn
+                statusElement.style.color = "#00ff88";
+            } else {
+                hud.style.borderRightColor = "#00d4ff"; // Standard blå
+                statusElement.style.color = "#00d4ff";
+            }
+        } catch (err) {
+            document.getElementById('status-text').innerText = "DISCONNECTED";
+        }
+    }
+
+    setInterval(updateMarvixStatus, 1000); // Opdater hvert sekund
 
     // System stats polling
     setInterval(async () => {

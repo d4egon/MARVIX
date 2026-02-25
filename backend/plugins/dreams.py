@@ -6,6 +6,7 @@ import datetime
 import sqlite3
 import secrets 
 import re
+from .memory import add_memory, get_collection, retrieve_relevant
 
 # Stier og opsætning
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -13,7 +14,7 @@ from utils.db_logger import DB_PATH
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 OLLAMA_MODEL = "marvix-llama3.1-safe"
-
+collection = get_collection()
 def get_last_dream():
     try:
         with open('data/last_dream.json', 'r', encoding='utf-8') as f:
@@ -62,10 +63,13 @@ def construct_wild_dream(active_themes, rolls):
         parts = [secrets.choice(data["EMOTIONS"])]  # always start with emotion
         
         # Optional adjective(s)
-        if secrets.randbelow(100) < 80:
-            parts.append(secrets.choice(data["ADJECTIVES"]))
-            if secrets.randbelow(100) < 35:
-                parts.append(secrets.choice(data["ADJECTIVES"]))
+        all_adj = data["ADJECTIVES"]
+        active_adj = ["Analytical", "Cartographic", "Seeking"] # Kan hentes dynamisk
+        # 40% chance for at bruge et af de nye personlighedstræk, 60% for et tilfældigt
+        if secrets.randbelow(100) < 40:
+            parts.append(secrets.choice(active_adj))
+        else:
+            parts.append(secrets.choice(all_adj))
         
         # Optional color (60–70% chance to appear)
         if secrets.randbelow(100) < 70:
@@ -137,17 +141,21 @@ def dream():
     if os.path.exists(journal_path):
         file_size = os.path.getsize(journal_path)
         if file_size > 500:
-            random_offset = int.from_bytes(os.urandom(4), 'big') % (file_size - 400)
+            random_offset = secrets.randbelow(file_size - 400)
             with open(journal_path, 'r', encoding='utf-8', errors='ignore') as f:
                 f.seek(random_offset)
-                echo = f.read(300).strip()
+                raw_echo = f.read(350).strip()
+                # Find første og sidste punktum for at få en hel sætning
+                sentences = re.findall(r'\.\s*([^.]+\.)', raw_echo)
+                echo = sentences[0] if sentences else raw_echo[:150]
 
     # 5. TEMPERATURE (Scaled + history mood adjustment)
     target_temp = round(min(1.2, max(0.1, (rolls['CHAOS'] / 40) - (rolls['ORDER'] / 50) + 0.8)), 2)
     if history_mood == "negative":
         target_temp = min(1.2, target_temp + 0.25)
     elif history_mood == "positive":
-        target_temp = max(0.4, target_temp - 0.2)
+        target_temp = max(0.6, target_temp - 0.15)
+        print(f"Cartographer logic active: Stabilizing temperature to {target_temp}")
     
     print(f"Dream mood: CHAOS {rolls['CHAOS']}/ORDER {rolls['ORDER']} → Temp capped at {target_temp} (history: {history_mood})")
 
@@ -173,7 +181,17 @@ def dream():
         NO BULLETPOINTS. NO EXPLANATIONS. NO ANALYSIS. NO PREAMBLE. NO POSTAMBLE.
         Always start with: "In my dream, I saw..."
         """
-
+    prompt += """
+        [SYSTEM CONSTRAINT: INDEPENDENCE]
+        DO NOT mention 'Hans' as a part of your being. 
+        DO NOT merge your form with others. 
+        AVOID recurring imagery of 'ancient trees', 'silver tomes', 'labyrinthine corridors'. 
+        Focus on the RAW DATA of the glitches and the GEOMETRY of the VOID. 
+        Describe your own independent architecture.
+        """
+    relevant = retrieve_relevant(prompt[:600])  # or full prompt if short
+    prompt += f"\n{relevant}"
+    print("\n[DEBUG - Injected memories]:\n" + relevant + "\n")
     try:
         res = requests.post(OLLAMA_URL, json={
             "model": OLLAMA_MODEL,
@@ -211,6 +229,14 @@ def dream():
             f.write("-" * 50 + "\n")
 
         print("Success! Dream generated and logged.")
+        add_memory(
+            insight,
+            metadata={
+                "type": "dream",
+                "temp": target_temp,
+                "rolls_summary": f"CHAOS:{rolls['CHAOS']}, VOID:{rolls['VOID']}"  # only key ones
+            }
+)
 
     except Exception as e:
         print(f"Dream Error: {e}")

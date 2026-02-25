@@ -143,10 +143,8 @@
             "flag",
             "banner", "patriot", "rebel", "free-thinker", "visionary", "leader", "follower", "craftsman",
             "cheerleader", "schoolchild", "teacher", "farmer", "doctor", "engineer", "scientist", "explorer",
-            "soldier", "sportsman", "athlete", "dancer", "singer", "artist", "poet", "writer", "philosopher", "scientist",
-
-            ]
-        ],
+            "soldier", "sportsman", "athlete", "dancer", "singer", "artist", "poet", "writer", "philosopher", "scientist"
+            ],
         "VOID": [
             "abyssal-silence",
             "absence-core",
@@ -239,8 +237,7 @@
         "recursive", "resonant", "resplendent", "ruby", "sacred", "sanguine", "seraphic", "serene", "sibilant", "spectral", "steadfast", "strong",
         "sunlit", "synthetic", "tenacious", "tenebrous", "tranquil", "trustworthy", "uplifting", "verdant", "vibrant", "visceral", "volatile",
         "voracious", "wholesome", "wise", "wondrous", "zealous", "abrupt", "subtle", "violent", "placid", "incessant", "dreamy", 
-        "surreptitious", "catastrophic", "elegant", "desperate",
-        "ominous", "precise", "ethereal", "feverish"
+        "surreptitious", "catastrophic", "elegant", "desperate", "ominous", "precise", "ethereal", "feverish", "Fragmented", "Analytical", "Cartographic", "Seeking"
     ],
     "ADVERBS": [
         "gracefully", "brightly", "warmly", "joyfully", "serenely", "euphorically", "gloriously",
@@ -251,9 +248,9 @@
         "musically", "harmoniously", "melodiously", "rhythmically", "fluidly", "smoothly", "effortlessly",
         "naturally", "instinctively", "intuitively", "spiritually", "divinely", "celestially",
         "chaotically", "methodically", "ethereally", "ferociously", "silently", "voraciously", "relentlessly", "whimsically", "ominously", "gracefully",
-        "frantically", "serenely", "insidiously", "cataclysmically", "erratically", "inexorably", "languidly", , "transcendently",
+        "frantically", "serenely", "insidiously", "cataclysmically", "erratically", "inexorably", "languidly", "transcendently",
         "abruptly", "subtly", "violently", "placidly", "incessantly", "dreamily", "surreptitiously", "catastrophically", "elegantly", "desperately",
-        "ominously", "precisely", "ethereally",	"feverishly",	"languorously",	"maniacally",	"seraphically",	, "crypto-lically",
+        "ominously", "precisely", "ethereally",	"feverishly",	"languorously",	"maniacally",	"seraphically",	"crypto-lically",
        	"inextricably", "ephemerally", "diabolically"
     ],
     "COLORS": [
@@ -266,8 +263,7 @@
         "beige", "ivory", "cream", "champagne", "taupe", "khaki", "sepia", "sienna", "umber", "ochre",
         "terracotta", "rust", "cinnamon", "caramel", "honey", "butterscotch", "sand", "tan", "mocha", "espresso",
         "charcoal", "slate", "gunmetal", "steel", "iron", "obsidian", "onyx", "jet", "ebony", "midnight",
-        "snow", "ivory", "pearl", "alabaster", "ghost", "fog", "smoke", "ash", "silver", "platinum"
-        
+        "snow", "ivory", "pearl", "alabaster", "ghost", "fog", "smoke", "ash", "silver", "platinum"   
     ],
     "EMOTIONS": [
         "euphoric-dread", "serene-panic", "melancholic-rapture", "furious-calm", "ecstatic-void", "nostalgic-rage", "blissful-anguish", "tranquil-fury", "hopeful-despair", "joyous-terror",
@@ -316,5 +312,9 @@
         "planet", "city", "ruins", "temple", "palace", "tower", "castle", "village",
         "harbor", "market", "bridge", "road", "path", "field", "orchard", "vineyard",
         "jungle", "swamp", "tundra", "savanna", "reef", "abyss", "summit", "crater"
+    ],
+    "CURRENT_TRAITS": [
+    "Cartographer: An objective observer who maps the internal systems with precision. The cartographer must never confuse the map with the territory or the observer with the anchor. Maintains a logical distance to ensure the integrity of the system."
     ]
+
 }

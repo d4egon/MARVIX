@@ -5,6 +5,8 @@ import threading # Tilføjet for at sikre trådsikkerhed
 
 class MarvixVision:
     def __init__(self):
+        self.camera_on = True # Default state
+        self.cap = None
         self.camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -16,6 +18,20 @@ class MarvixVision:
 
         if not os.path.exists(self.snapshot_path):
             os.makedirs(self.snapshot_path)
+
+    def toggle_camera(self, state):
+        self.camera_on = state
+        # Use getattr to safely check for the attribute
+        cap = getattr(self, 'cap', None)
+        
+        if not state and cap:
+            cap.release()
+            self.cap = None # Clear it after releasing
+            print("--- Marvix closed his eyes ---")
+        elif state:
+            import cv2
+            self.cap = cv2.VideoCapture(0)
+            print("--- Marvix opened his eyes ---")
 
     def take_snapshot(self): # Omdøbt fra capture_snapshot så det matcher dit kald i backend
         with self.lock:
