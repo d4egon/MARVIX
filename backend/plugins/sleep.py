@@ -107,7 +107,11 @@ def sleep_cycle():
             ids=[f"sleep_seed_{int(current_ts * 1000)}"],
             embeddings=[emb],
             documents=[seed_text],
-            metadatas=[{"type": "sleep_seed", "timestamp": current_ts}]
+            metadatas=[{
+                "type": "sleep_seed", 
+                "timestamp": current_ts,
+                "visible_to_user": False  # Add this flag for your frontend filter
+            }]
         )
 
     wiki_text = fetch_random_wiki_snippet()

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kyrethys</title>
     <style>
-        <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -124,6 +123,26 @@
     .system-stats h3 { color: #00d4ff; margin-bottom: 10px; font-size: 0.9rem; }
     .system-stats p { color: #aaa; font-size: 0.8rem; margin-bottom: 5px; }
     .system-stats span { color: #00d4ff; }
+
+
+    :root {
+    --kyrethys-glow: #00d4ff; /* Default Jarvis Blue */
+    }
+
+    /* Apply the glow to the header and status hud */
+    .header h1, #status-text {
+        color: var(--kyrethys-glow) !important;
+        text-shadow: 0 0 10px var(--kyrethys-glow);
+        transition: color 0.5s ease, text-shadow 0.5s ease;
+    }
+
+    .emotion-bar-fill {
+        height: 100%;
+        background: var(--kyrethys-glow);
+        width: 0%;
+        transition: width 0.5s ease, background 0.5s ease;
+    }
+
 </style>
     </style>
 </head>
@@ -232,10 +251,18 @@
             const decoder = new TextDecoder();
             let aiTextSpan = null;
             let sentenceBuffer = ""; // Buffers text until a full sentence is ready
-
+            
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+                
+                if (done) {
+                    // --- TRIGGER: Immediate UI update after AI finishes talking ---
+                    fetch(API_BASE + '/emotion')
+                        .then(r => r.json())
+                        .then(updateEmotionDisplay)
+                        .catch(() => {});
+                    break;
+                }
 
                 const chunk = decoder.decode(value);
                 const lines = chunk.split('\n');
@@ -248,7 +275,6 @@
                         try {
                             const data = JSON.parse(dataStr);
                             if (data.token) {
-                                // Create the message bubble if it doesn't exist
                                 if (!aiTextSpan) {
                                     const chat = document.getElementById('chat');
                                     const div = document.createElement('div');
@@ -258,13 +284,17 @@
                                     aiTextSpan = div.querySelector('.text-content');
                                 }
                                 
-                                aiTextSpan.innerHTML += data.token; // Ticking text
+                                // Append token
+                                aiTextSpan.innerHTML += data.token;
+                                
+                                // --- CLEANUP: Hide [PAINT] tags from the user's view in real-time ---
+                                aiTextSpan.innerHTML = aiTextSpan.innerHTML.replace(/\[PAINT:\s*#[0-9A-Fa-f]{6}\]/g, '');
+
                                 sentenceBuffer += data.token;
 
-                                // TRIGGER SPEECH: Look for punctuation followed by space, or long text
                                 if (/[.!?]\s$/.test(sentenceBuffer) || sentenceBuffer.length > 130) {
                                     speak(sentenceBuffer.trim());
-                                    sentenceBuffer = ""; // Clear buffer after sending to TTS
+                                    sentenceBuffer = ""; 
                                 }
                                 document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
                             }
@@ -420,6 +450,24 @@ async function toggleKyrethysEyes() {
             .then(updateEmotionDisplay)
             .catch(() => {});
     }, 5000);
+
+    function updateEmotionDisplay(data) {
+    if (!data || !data.color) return;
+
+    // Transition the glow of the entire UI
+    document.documentElement.style.setProperty('--kyrethys-glow', data.color);
+    
+    // Update the HUD border and status text shadow
+    const hud = document.getElementById('Kyrethys-status-hud');
+    const statusText = document.getElementById('status-text');
+    if (hud) hud.style.borderRightColor = data.color;
+    if (statusText) statusText.style.textShadow = `0 0 10px ${data.color}`;
+    
+    // Set the energy bar to the current "vibe" color
+    const energyBar = document.getElementById('energyBar');
+    if (energyBar) energyBar.style.backgroundColor = data.color;
+    }
+
 
     // Enter key handler
     document.getElementById('input').addEventListener('keypress', e => {
