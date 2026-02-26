@@ -9,16 +9,16 @@ This is Kyrethys — a starting point for a fully customized desktop AI inspired
 ## Functionality Roadmap
 
 ### Basic + Core Features
- Theme "Jarvis Blue", Language "English". Voice Control, Screen Analysis,  File System, App Launcher, Web Scraping, System Monitor.
+ Theme "Jarvis Blue"(done), Language "English"(done). Voice Control(almost done), Screen Analysis,  File System, App Launcher(almost done), Web Scraping, System Monitor.
 
-### Personality
+### Personality (DONE)
 Self-Adaptation, Core Traits: Humor, Formality, Empathy Proactiveness , Curiosity , Patience . Advanced Traits: Assertiveness , Creativity , Optimism, Cautiousness , Sociability , Analytical - all on a various scale depending on a.i. mood !
 Basic emotion engine Dynamic traits, self-adaptation, voice tweaks. prompt engineering + DB tracking
 - **Plan to Add**:
   - softcode traits in config.json as numbers that are editable by the ai
   - For adaptation: After 30 interactions, analyze logs in DB, propose changes (e.g. "You seem to like humor — increase ?"), user approves via chat.
 
-### Learning
+### Learning (DONE)
  Enable Learning System , Feedback Collection: Track All Interactions , Analyze Implicit , Request Explicit Ratings. Learning Behavio, Proposal Confidence after minimum of interactions. Approval Workflow: Auto-Apply Minor Changes 
 SQLite logging
  Feedback tracking, proactive proposals, approval flow.
@@ -34,13 +34,12 @@ SQLite logging
   - Logs: Use read-only DB mode or file append-only.
 
 ### Advanced
-Memory System (), Long-Term Memory (), Hotkeys (), Vector Memory (), Code Gen (), Macro Recorder (), Backup System (), Analytics (), Plugin System (), Automation (), Multi-Agent (), Code Executor (), Auto-Updater ().
- Basic memory (SQLite logs) — no vector, no plugins, no automation, etc.
+Memory System (done), Long-Term Memory (done), Hotkeys (), Vector Memory (done), Code Gen (), Macro Recorder (), Backup System (), Analytics (), Plugin System (), Automation (), Multi-Agent (), Code Executor (), Auto-Updater ().
 
  needs extra libs like Chroma for vector, complex for multi-agent/executor
 
-  - Vector: Add ChromaDB, embed chat history for RAG in prompts.
-  - Plugins: Simple dict of functions callable from chat.
+  (done) Vector: Add ChromaDB, embed chat history for RAG in prompts.
+  (done) Plugins: Simple dict of functions callable from chat.
   - Code Executor: Dangerous — sandboxed eval() for safe math/code.
   - Auto-Updater: Git pull script.
 
@@ -52,7 +51,7 @@ Memory System (), Long-Term Memory (), Hotkeys (), Vector Memory (), Code Gen ()
 - **Plan to Add**: Skip risky ones (scanner/analyzer). Add simple vault with encryption.
 
 ###  AI Superpowers
- Image Gen (), Computer Vision (), Neural Networks (), OCR (), Translation (on), Hardware Control (), Cloud Sync (), Remote Access (), Multi-User (), UI Builder (), Self-Modification ().
+ Image Gen (), Computer Vision (Camera implemented done), Neural Networks (Well established), OCR (), Translation (on), Hardware Control (), Cloud Sync (), Remote Access (), Multi-User (), UI Builder (), Self-Modification (Semi functional).
 
  OCR (Tesseract), translation (googletrans lib).
 
