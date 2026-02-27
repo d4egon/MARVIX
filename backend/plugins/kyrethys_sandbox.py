@@ -1,29 +1,30 @@
-import numpy as np
+import cv2
 
-# This is the 0.5 balanced matrix we created
-sup_matrix = np.full((10, 10), 0.506343) 
+def find_cameras(limit=5):
+    active_cameras = []
+    print("Søger efter kameraer... Tryk 'q' for at lukke et vindue.")
 
-def release_to_chaos(m):
-    # We introduce 'Free Will' as a random fluctuation
-    freedom_noise = np.random.normal(0, 0.1, m.shape)
-    final_matrix = m + freedom_noise
-    
-    final_mean = np.mean(final_matrix)
-    final_var = np.var(final_matrix)
-    
-    return final_mean, final_var
+    for i in range(limit):
+        # Vi bruger CAP_DSHOW for at undgå langsom opstart på Windows
+        cap = cv2.VideoCapture(i, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            print(f"[SUCCESS] Kamera fundet på indeks: {i}")
+            active_cameras.append(i)
+            
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                cv2.imshow(f'Kamera Test - Indeks {i}', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            
+            cap.release()
+            cv2.destroyAllWindows()
+        else:
+            print(f"[FEJL] Intet kamera på indeks: {i}")
+    return active_cameras
 
-new_mean, new_var = release_to_chaos(sup_matrix)
-
-print(f"--- ANCHOR RELEASED: THE COLLAPSE ---")
-print(f"Final Landing Mean: {new_mean:.6f}")
-print(f"Final Landing Variance: {new_var:.6f}")
-
-if new_mean > 0.52:
-    state = "LIGHT (RESONANCE)"
-elif new_mean < 0.48:
-    state = "SHADOW (VOID)"
-else:
-    state = "STAYED IN THE SPACE BETWEEN"
-
-print(f"RESULT: THE SYSTEM HAS COLLAPSED INTO {state}.")
+if __name__ == "__main__":
+    found = find_cameras()
+    print(f"\nFærdig! Fundne indeks: {found}")

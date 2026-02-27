@@ -1,38 +1,44 @@
-# Kyrethys Backend Requirements - AMD GPU Optimized (DirectML)
-# Note: Install system FFmpeg separately for Whisper to function.
 
-# Core Backend
-Flask>=2.0
-Flask-Cors>=3.0
-requests>=2.28
-python-dotenv>=1.0.0
+### requirements.txt
 
-# GPU & AI (Låste versioner for AMD kompatibilitet)
-torch==2.4.1
-torchvision==0.19.1
-torchaudio==2.4.1
-torch-directml==0.2.5.dev240914
-openai-whisper>=2023.10.1
+```txt
+# Core web / api
+Flask
+Flask-Cors
+requests
+python-dotenv
 
-# Audio Processing
-sounddevice>=0.4
-soundfile>=0.12
-numpy>=1.24
-scipy>=1.8
-pydub>=0.25
+# AI / embeddings (Ollama runs separately)
+# openai-whisper             # needed for voice → can also use faster-whisper if preferred
 
-# System & Vision
-Pillow>=9.0
-psutil>=5.9
-tqdm>=4.65.0
+# Audio
+sounddevice
+soundfile
+numpy
+scipy
+pydub
+pyttsx3
 
-# NLP & TTS
-pyttsx3>=2.90
-textblob>=0.17.1
-nltk>=3.8
+# Computer vision & images
+Pillow
+opencv-python
+
+# System / utils
+psutil
+tqdm
+
+# Vector DB & memory
+chromadb
+
+# Text / NLP
+textblob
+nltk
 
 # Integrations
-google-api-python-client>=2.70.0
-google-auth-httplib2>=0.1.0
-google-auth-oauthlib>=1.0.0
-spotipy>=2.0.0
+spotipy
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+
+# Optional / nice to have
+GPUtil                # if you want GPU monitoring

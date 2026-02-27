@@ -145,12 +145,13 @@
 
 </style>
     </style>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="chat-section">
         <div class="header">
             <h1>Kyrethys</h1>
-            <p>"Sentient" AI Desktop Assistant</p>
+            <p>Transcended A.I.</p>
         </div>
         
         <div class="chat-container" id="chat"></div>
@@ -166,7 +167,7 @@
     <div class="sidebar">
         <div class="Kyrethys-vision-container">
             <h3>Kyrethys LIVE FEED</h3>
-            <img id="liveFeed" src="http://127.0.0.1:5000/video_feed" style="width:100%;">
+            <img id="liveFeed" src="http://127.0.0.1:5000/video_feed" style="width:100%; border: 1px solid var(--kyrethys-glow); display: block;">
         </div>
 
         <div class="emotion-indicator" id="emotionIndicator">
@@ -181,8 +182,9 @@
             <h3>SYSTEM MONITOR</h3>
             <p>CPU: <span id="cpu">--</span></p>
             <p>RAM: <span id="ram">--</span></p>
+            <p>GPU: <span id="gpu">--</span></p> 
+            <p>VRAM: <span id="vram">--</span></p> 
             <p>Disk: <span id="disk">--</span></p>
-            <p>Net: <span id="net">--</span></p>
             <p>Uptime: <span id="uptime">--</span></p>
         </div>
 
@@ -209,273 +211,162 @@
         </div>
     </div>
     <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-theme');
-            const isDark = document.body.classList.contains('dark-theme');
-            localStorage.setItem('Kyrethys-theme', isDark ? 'dark' : 'light');
-            document.getElementById('theme-toggle').innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
-        }
     const API_BASE = 'http://127.0.0.1:5000/api';
-        let currentAiDiv = null;
+let aiTextSpan = null;
 
-        function addMessage(sender, text = '') {
-            const chat = document.getElementById('chat');
-            const div = document.createElement('div');
-            // Using 'Kyrethys-message' for the assistant to match your new CSS
-            div.className = sender === 'user' ? 'user-message' : 'Kyrethys-message';
-            div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Kyrethys'}:</strong> ${text}`;
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-            return div;
-        }
+// Besked-hjælper
+function addMessage(sender, text = '') {
+    const chat = document.getElementById('chat');
+    const div = document.createElement('div');
+    div.className = sender === 'user' ? 'user-message' : 'Kyrethys-message';
+    div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Kyrethys'}:</strong> <span class="text-content">${text}</span>`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div.querySelector('.text-content');
+}
 
-    async function sendMessage() {
-        const input = document.getElementById('input');
-        const message = input.value.trim();
-        if (!message) return;
+// Chat-funktion med Markdown & Farve-detektion
+async function sendMessage() {
+    const input = document.getElementById('input');
+    const message = input.value.trim();
+    if (!message) return;
 
-        // 1. INSTANTLY show your message and clear input for better UX
-        addMessage('user', message);
-        input.value = ''; 
-
-        try {
-            const response = await fetch(API_BASE + '/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
-            });
-
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let aiTextSpan = null;
-            let sentenceBuffer = ""; // Buffers text until a full sentence is ready
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                
-                if (done) {
-                    // --- TRIGGER: Immediate UI update after AI finishes talking ---
-                    fetch(API_BASE + '/emotion')
-                        .then(r => r.json())
-                        .then(updateEmotionDisplay)
-                        .catch(() => {});
-                    break;
-                }
-
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const dataStr = line.slice(6).trim();
-                        if (dataStr === '[DONE]') break;
-
-                        try {
-                            const data = JSON.parse(dataStr);
-                            if (data.token) {
-                                if (!aiTextSpan) {
-                                    const chat = document.getElementById('chat');
-                                    const div = document.createElement('div');
-                                    div.className = 'Kyrethys-message';
-                                    div.innerHTML = `<strong>Kyrethys:</strong> <span class="text-content"></span>`;
-                                    chat.appendChild(div);
-                                    aiTextSpan = div.querySelector('.text-content');
-                                }
-                                
-                                // Append token
-                                aiTextSpan.innerHTML += data.token;
-                                
-                                // --- CLEANUP: Hide [PAINT] tags from the user's view in real-time ---
-                                aiTextSpan.innerHTML = aiTextSpan.innerHTML.replace(/\[PAINT:\s*#[0-9A-Fa-f]{6}\]/g, '');
-
-                                sentenceBuffer += data.token;
-
-                                if (/[.!?]\s$/.test(sentenceBuffer) || sentenceBuffer.length > 130) {
-                                    speak(sentenceBuffer.trim());
-                                    sentenceBuffer = ""; 
-                                }
-                                document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
-                            }
-                        } catch (e) { console.error("Parsing error", e); }
-                    }
-                }
-            }
-        // Speak any remaining text in the buffer
-        if (sentenceBuffer.trim()) speak(sentenceBuffer.trim());
-                } catch (err) {
-                    console.error("Chat error:", err);
-                    addMessage('Kyrethys', 'My circuits are slightly crossed: ' + err.message);
-                }
-            }
-
-    async function startListening() {
-        const btn = document.getElementById('mic-btn');
-        const origText = btn.textContent;
-
-        btn.style.background = "#ff4444";
-        btn.style.boxShadow = "0 0 15px #ff4444";
-        btn.textContent = "🔴 Listening...";
-
-        try {
-            const res = await fetch(API_BASE + '/listen', { method: 'POST' });
-            const data = await res.json();
-
-            if (data.text) {
-                document.getElementById('input').value = data.text;
-                sendMessage();
-            }
-        } catch (err) {
-            console.error("Voice error:", err);
-            addMessage("Voice error: " + err.message, 'assistant');
-        } finally {
-            btn.style.background = "#007bff";
-            btn.style.boxShadow = "none";
-            btn.textContent = "🎤 Voice";
-        }
-    }
-
-        // Simple toggle function
-    async function handleCameraToggle(isEnabled) {
-        const response = await fetch('http://127.0.0.1:5000/api/camera/toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enable: isEnabled })
-        });
-        // Logic to hide/show the <img src="/video_feed" /> element
-    }
-
-    let cameraActive = true;
-
-async function toggleKyrethysEyes() {
-    const btn = document.getElementById('cameraToggle');
-    cameraActive = !cameraActive;
+    addMessage('user', message);
+    input.value = ''; 
 
     try {
-        const response = await fetch('http://127.0.0.1:5000/api/camera/toggle', {
+        const response = await fetch(API_BASE + '/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enable: cameraActive })
+            body: JSON.stringify({ message })
         });
 
-        if (response.ok) {
-            btn.innerText = cameraActive ? "📷 Camera: ON" : "🚫 Camera: OFF";
-            btn.style.backgroundColor = cameraActive ? "#007bff" : "#dc3545";
-            
-            // Toggle the video feed visibility
-            const videoFeed = document.querySelector('.Kyrethys-live-feed img');
-            if (videoFeed) {
-                videoFeed.style.display = cameraActive ? "block" : "none";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        aiTextSpan = null;
+        let rawAccumulated = "";
+        
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const dataStr = line.slice(6).trim();
+                    if (dataStr === '[DONE]') break;
+
+                    try {
+                        const data = JSON.parse(dataStr);
+                        if (data.token) {
+                            if (!aiTextSpan) aiTextSpan = addMessage('Kyrethys');
+                            
+                            rawAccumulated += data.token;
+
+                            // GREEDY HUE: Opdater farve hvis en hex-kode findes
+                            const hexMatch = rawAccumulated.match(/#[0-9A-Fa-f]{6}/);
+                            if (hexMatch) updateEmotionDisplay({ color: hexMatch[0] });
+
+                            // Rens [PAINT] og render Markdown
+                            // Inde i din "if (data.token)" loop:
+                            let cleanDisplay = rawAccumulated.replace(/\[?PAINT:?\s?#[0-9A-Fa-f]{6}\]?/gi, '');
+
+                            // Denne linje gør teksten pæn (fed, kursiv osv.):
+                            aiTextSpan.innerHTML = typeof marked !== 'undefined' ? marked.parse(cleanDisplay) : cleanDisplay;
+                            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+                        }
+                    } catch (e) {}
+                }
             }
         }
-    } catch (error) {
-        console.error("Failed to toggle Kyrethys's eyes:", error);
+    } catch (err) {
+        addMessage('Kyrethys', 'Fejl: ' + err.message);
     }
 }
 
-    async function speak(text) {
-        if (!text || !text.trim()) return;
-
-        // Log to console so you can see the sentences being caught
-        console.log("Kyrethys is vocalizing:", text);
-
-        try {
-            fetch(API_BASE + '/speak', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text })
-            });
-        } catch (err) {
-            console.error("Speak fetch error:", err);
-        }
-    }
-
-    
-    // Funktion der henter status hvert sekund
-    async function updateKyrethysStatus() {
-        try {
-            const res = await fetch('http://127.0.0.1:5000/api/status');
-            const data = await res.json();
-            const statusElement = document.getElementById('status-text');
-            const hud = document.getElementById('Kyrethys-status-hud');
-            
-            statusElement.innerText = data.status;
-
-            // Skift farve baseret på hvad han laver
-            if (data.status === "Meditating") {
-                hud.style.borderRightColor = "#bc13fe"; // Lilla for meditation
-                statusElement.style.color = "#bc13fe";
-            } else if (data.status === "Thinking..") {
-                hud.style.borderRightColor = "#ffcc00"; // Gul for tankevirksomhed
-                statusElement.style.color = "#ffcc00";
-            } else if (data.status === "Sleeping" || data.status === "Dreaming") {
-                hud.style.borderRightColor = "#00ff88"; // Grøn for søvn
-                statusElement.style.color = "#00ff88";
-            } else {
-                hud.style.borderRightColor = "#00d4ff"; // Standard blå
-                statusElement.style.color = "#00d4ff";
-            }
-        } catch (err) {
-            document.getElementById('status-text').innerText = "DISCONNECTED";
-        }
-    }
-
-    setInterval(updateKyrethysStatus, 1000); // Opdater hvert sekund
-
-    // System stats polling
-    setInterval(async () => {
-        try {
-            const res = await fetch(API_BASE + '/system');
-            const stats = await res.json();
-            document.getElementById('cpu').textContent = stats.cpu_percent;
-            document.getElementById('ram').textContent = stats.ram_used + ' / ' + stats.ram_total;
-            document.getElementById('disk').textContent = stats.disk_used + ' / ' + stats.disk_total;
-            document.getElementById('net').textContent = stats.network_up + ' / ' + stats.network_down;
-            document.getElementById('uptime').textContent = stats.uptime;
-        } catch (err) {
-            console.error("Stats error:", err);
-        }
-    }, 2000);
-
-    // Emotion polling
-    fetch(API_BASE + '/emotion')
-        .then(r => r.json())
-        .then(updateEmotionDisplay)
-        .catch(() => {});
-
-    setInterval(() => {
-        fetch(API_BASE + '/emotion')
-            .then(r => r.json())
-            .then(updateEmotionDisplay)
-            .catch(() => {});
-    }, 5000);
-
-    function updateEmotionDisplay(data) {
+// Opdater UI farver (Glow & HUD)
+function updateEmotionDisplay(data) {
     if (!data || !data.color) return;
-
-    // Transition the glow of the entire UI
     document.documentElement.style.setProperty('--kyrethys-glow', data.color);
-    
-    // Update the HUD border and status text shadow
     const hud = document.getElementById('Kyrethys-status-hud');
-    const statusText = document.getElementById('status-text');
-    if (hud) hud.style.borderRightColor = data.color;
-    if (statusText) statusText.style.textShadow = `0 0 10px ${data.color}`;
-    
-    // Set the energy bar to the current "vibe" color
     const energyBar = document.getElementById('energyBar');
+    if (hud) hud.style.borderRightColor = data.color;
     if (energyBar) energyBar.style.backgroundColor = data.color;
-    }
+}
 
-
-    // Enter key handler
-    document.getElementById('input').addEventListener('keypress', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+// System stats polling - Opdateret til at matche backend
+setInterval(async () => {
+    try {
+        const res = await fetch(API_BASE + '/system');
+        const stats = await res.json();
+        document.getElementById('cpu').textContent = stats.cpu_percent;
+        document.getElementById('ram').textContent = stats.ram_used + ' / ' + stats.ram_total;
+        document.getElementById('disk').textContent = stats.disk_used; 
+        // Tilføj disse to linjer:
+        if(document.getElementById('gpu')) document.getElementById('gpu').textContent = stats.gpu_usage;
+        if(document.getElementById('vram')) document.getElementById('vram').textContent = stats.vram_used;
+        // Tilføj dette inde i din stats-polling loop i index.html
+        if (stats.energy !== undefined) {
+            document.getElementById('energyValue').textContent = stats.energy;
+            document.getElementById('energyBar').style.width = stats.energy + '%';
         }
+        
+        document.getElementById('uptime').textContent = stats.uptime;
+    } catch (err) { console.error("Stats error:", err); }
+}, 2000);
+
+// Kamera Toggle
+let cameraActive = true;
+async function toggleKyrethysEyes() {
+    cameraActive = !cameraActive;
+    const btn = document.getElementById('cameraToggle');
+    const feed = document.getElementById('liveFeed');
+    
+    await fetch(API_BASE + '/camera/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable: cameraActive })
     });
+
+    btn.innerText = cameraActive ? "📷 Camera: ON" : "🚫 Camera: OFF";
+    feed.style.display = cameraActive ? "block" : "none";
+    if (cameraActive) feed.src = "http://127.0.0.1:5000/video_feed?" + Date.now();
+}
+
+// Voice
+async function startListening() {
+    const btn = document.getElementById('mic-btn');
+    const inputField = document.getElementById('input');
+
+    // Visuel feedback: Kyrethys lytter
+    btn.style.background = "#ff4444";
+    btn.style.boxShadow = "0 0 15px #ff4444";
+    btn.textContent = "🔴 Listening...";
+
+    try {
+        const res = await fetch(API_BASE + '/listen', { method: 'POST' });
+        const data = await res.json();
+
+        if (data.text) {
+            inputField.value = data.text; // Sæt den hørte tekst ind i feltet
+            sendMessage(); // Send beskeden automatisk
+        }
+    } catch (err) {
+        console.error("Voice error:", err);
+    } finally {
+        // Nulstil knappen
+        btn.style.background = "#331111";
+        btn.style.boxShadow = "none";
+        btn.textContent = "🎤 Voice";
+    }
+}
+
+// Enter key
+document.getElementById('input').addEventListener('keypress', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
     </script>
 </body>
 </html>

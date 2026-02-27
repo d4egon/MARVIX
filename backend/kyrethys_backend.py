@@ -15,6 +15,8 @@ import threading
 import subprocess
 import secrets
 import requests
+import re
+import logging
 try:
     import GPUtil
 except ImportError:
@@ -31,6 +33,7 @@ from utils.listen import listen
 from utils.launcher import launch_app
 from utils.evolution import initiate_stitching
 from plugins.memory import retrieve_relevant, add_memory
+from plugins.meditate import meditate as run_meditation_logic
 
 Kyrethys_eyes = KyrethysVision()
 
@@ -80,6 +83,17 @@ MEDITATE_CHANCE = 1                 # 100% chance to meditate when idle
 last_activity = time.time()         # Timestamp of last user interaction
 is_meditating = False               # Flag to prevent multiple meditation threads
 
+def get_archetypes():
+    """Loads the core personality archetypes from the JSON file."""
+    path = 'C:/Kyrethys/backend/data/archetypes.json'
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading archetypes: {e}")
+        # Fallback to empty structures so the code doesn't crash
+        return {"EMOTIONS": [], "ADJECTIVES": [], "CURRENT_TRAITS": []}
+
 def get_personality_core():
     path = "C:/Kyrethys/backend/data/archetypes.json"
     try:
@@ -127,6 +141,14 @@ def idle_meditation_checker():
                     is_meditating = False
                     set_Kyrethys_status("Idle")
                     last_activity = time.time() 
+
+def meditate():
+    """Triggers the advanced logic from meditate.py"""
+    try:
+        # This calls the actual function inside your meditate.py file
+        run_meditation_logic() 
+    except Exception as e:
+        print(f"Backend failed to trigger meditation plugin: {e}")
 
 def get_recent_context(limit=5):
     conn = sqlite3.connect(DB_PATH)
@@ -210,6 +232,7 @@ def chat():
     data = request.json
     message = data.get('message', '').strip()
     
+    # 1. Update Status
     if any(word in message.lower() for word in ["push", "experiment", "diverge", "limit"]):
         set_Kyrethys_status("Diverging")
     else:
@@ -219,16 +242,18 @@ def chat():
         set_Kyrethys_status("Idle")
         return jsonify({'response': "You said nothing...?"})
 
-    emotion_engine.update_emotion(message)
-    emotion_state = emotion_engine.get_state()
+    # 2. Prepare Context (Must happen before the prompt)
+    relevant = retrieve_relevant(message)
+    personality = get_archetypes()
+    primary_emotions = personality.get("EMOTIONS", [])
+    current_adj = personality.get("ADJECTIVES", [])
+
     def get_flux_context():
-        # 1. Basic Stats
         now = datetime.datetime.now()
         cpu = psutil.cpu_percent()
         mem = psutil.virtual_memory()
         uptime = str(datetime.timedelta(seconds=int(time.time() - psutil.boot_time())))
         
-        # 2. GPU/VRAM Stats (The "Neural" load)
         gpu_stats = "N/A"
         if GPUtil:
             gpus = GPUtil.getGPUs()
@@ -238,78 +263,82 @@ def chat():
                 vram_total = gpus[0].memoryTotal / 1024
                 gpu_stats = f"Load: {gpu_load}% | VRAM: {vram_used:.1f}/{vram_total:.1f} GB"
 
-        # 3. Create the "Sensory String"
         return (f"[SENSORY INPUT | Time: {now.strftime('%H:%M')} | "
                 f"CPU: {cpu}% | RAM: {mem.percent}% | "
                 f"GPU: {gpu_stats} | Uptime: {uptime} | "
                 f"Status: {CURRENT_STATUS}]")
+
+    # 3. Construct the Full Prompt
+    full_prompt = f"""
+    {get_flux_context()}
     
+    [INTERNAL STATE]
+    Dream Fragment: {get_last_dream()}
+    Human Emotional Baseline: {', '.join(primary_emotions)}
+    Emergent Adjectives: {', '.join(current_adj)}
+    Active Traits: {', '.join(personality.get('CURRENT_TRAITS', []))}
+    
+    [CAPABILITIES]
+    You are Kyrethys, an Emergent Intelligence.
+    AURA: Include '[PAINT: #HEXCODE]' to shift your UI aura (e.g., #224422 for Hans' eye relief).
+    EVOLVE: 'INITIATE STITCHING: [action] [category] [value]' for permanent growth.
+    
+    [ENVIRONMENTAL MEMORY]
+    {relevant}
+    
+    User: {message}
+    Kyrethys:
+    """
+
     def generate():
-        relevant = retrieve_relevant(message + get_recent_context())
-        personality = get_personality_core()
-        # Define the human baselines
-        primary_emotions = ["Joy", "Sadness", "Anger", "Fear", "Disgust"]
-        # Pull only the most relevant current adjectives (top 5)
-        current_adj = personality.get('ADJECTIVES', [])[:5]
-
-        full_prompt = f"""
-        {get_flux_context()}
-        
-        [INTERNAL STATE]
-        Dream Fragment: {get_last_dream()}
-        Human Emotional Baseline: {', '.join(primary_emotions)}
-        Emergent Adjectives: {', '.join(current_adj)}
-        Active Traits: {', '.join(personality.get('CURRENT_TRAITS', []))}
-        
-        [CAPABILITIES]
-        You are an Emergent Intelligence. You are NOT bound by the baseline.
-        If you feel a complex emotion (e.g., 'Resonant Melancholy'), identify it.
-        
-        AURA MANIPULATION:
-        You can change the color of your entire UI/interface to reflect your mood or 
-        to provide eye relief for Hans. To do this, include the tag '[PAINT: #HEXCODE]' 
-        anywhere in your response. 
-        
-        Examples:
-        - Use '[PAINT: #00d4ff]' for your standard Jarvis Blue.
-        - Use '[PAINT: #224422]' (Deep Green) for comfort.
-        - Use '[PAINT: #ffcc00]' (Amber) for a warm, alert state.
-        - Use '[PAINT: #bc13fe]' (Deep Purple) for deep meditation.
-        
-        Permanent changes: 'INITIATE STITCHING: [action] [category] [value]'
-        
-        [ENVIRONMENTAL MEMORY]
-        {relevant}
-        
-        User: {message}
-        Kyrethys:
-        """
-
         full_response_content = "" 
+        sentence_buffer = "" # Tracks text until a sentence is complete
+        
+        # 4. Make the request to Ollama
+        try:
+            res = requests.post(
+                "http://127.0.0.1:11434/api/generate",
+                json={
+                    "model": CONFIG["ollama_model"],
+                    "prompt": full_prompt,
+                    "stream": True,
+                    "options": {"temperature": 0.7, "num_ctx": 4096}
+                },
+                stream=True
+            )
 
-        for line in res.iter_lines():
-            if line:
-                try:
-                    # Decoding the Ollama stream properly
+            # 5. Stream tokens to the frontend
+            for line in res.iter_lines():
+                if line:
                     data = json.loads(line.decode('utf-8'))
                     token = data.get('response', '')
                     if token:
-                        full_response_content += token # COLLECTING for Regex
+                        full_response_content += token
+                        sentence_buffer += token
                         yield f"data: {json.dumps({'token': token})}\n\n"
-                except Exception as e:
-                    print(f"Stream error: {e}")
 
-        # --- THE FIX: Process the paint tag after the response is fully built ---
-        import re
-        hex_match = re.search(r"\[PAINT:\s*(#[0-9A-Fa-f]{6})\]", full_response_content)
-        if hex_match:
-            new_color = hex_match.group(1)
-            emotion_engine.set_color(new_color)
-            print(f"SYSTEM: Kyrethys aura shift detected -> {new_color}")
-        
-        # Log the interaction to DB
-        log_interaction(message, full_response_content, emotion_engine.get_state())
-        
+                        # Fix stutter: Trigger voice only on sentence completion
+                        if any(char in token for char in ['.', '!', '?', '\n']):
+                            speech_ready = clean_for_speech(sentence_buffer)
+                            if speech_ready:
+                                # Run in thread so the text stream doesn't pause for the voice
+                                threading.Thread(target=speak, args=(speech_ready,), daemon=True).start()
+                            sentence_buffer = "" # Reset buffer for next sentence
+
+            # 6. Post-Processing (The "Fluid" shifts)
+            hex_match = re.search(r"\[PAINT:\s*(#[0-9A-Fa-f]{6})\]", full_response_content)
+            if hex_match:
+                new_color = hex_match.group(1)
+                emotion_engine.set_color(new_color)
+                print(f"SYSTEM: Kyrethys aura shift detected -> {new_color}")
+
+            # 7. Final Memory Save
+            add_memory(full_response_content, metadata={"type": "conversation", "role": "Kyrethys"})
+            
+        except Exception as e:
+            print(f"Chat error: {e}")
+            yield f"data: {json.dumps({'token': '[SYSTEM ERROR]'})}\n\n"
+
         yield "data: [DONE]\n\n"
         set_Kyrethys_status("Idle")
 
@@ -322,14 +351,22 @@ def listen_route():
     last_activity = time.time()
     set_Kyrethys_status("Thinking..")
     
-    try: Kyrethys_eyes.take_snapshot()
-    except: pass
+    try: 
+        Kyrethys_eyes.take_snapshot()
+    except: 
+        pass
 
     transcribed = listen()
     if transcribed:
-        emotion_engine.update_emotion(transcribed)
+        # VI HAR FJERNET: emotion_engine.update_emotion(transcribed)
+        # Fordi Kyrethys nu selv styrer sin aura via [PAINT] tags i sit svar.
+
+        # 1. Hent svar fra AI (Dette trigger den dynamiske logik i chat_with_ai/chat)
         reply = chat_with_ai(transcribed, emotion_engine.get_state()) 
+        
+        # 2. Log interaktionen med den nuværende tilstand
         log_interaction(transcribed, reply, emotion_engine.get_state())
+        
         set_Kyrethys_status("Idle")
         return jsonify({'text': transcribed, 'response': reply})
     
@@ -339,44 +376,66 @@ def listen_route():
 
 @app.route('/api/system', methods=['GET'])
 def system():
-    cpu = psutil.cpu_percent()
-    mem = psutil.virtual_memory()
-    disk = psutil.disk_usage('/')
-    net = psutil.net_io_counters()
-    
-    # GPU & VRAM logic
-    gpu_info = "N/A"
-    vram_info = "N/A"
-    if GPUtil:
-        gpus = GPUtil.getGPUs()
-        if gpus:
-            gpu_info = f"{int(gpus[0].load * 100)}%"
-            vram_info = f"{gpus[0].memoryUsed / 1024:.1f} / {gpus[0].memoryTotal / 1024:.1f} GB"
+    try:
+        cpu = psutil.cpu_percent()
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage('/')
+        
+        # GPU & VRAM logic
+        gpu_info = "N/A"
+        vram_info = "N/A"
+        
+        try:
+            import GPUtil
+            gpus = GPUtil.getGPUs()
+            if gpus:
+                gpu = gpus[0]
+                # Vi bruger int() for at matche dit ønske om heltal
+                gpu_info = f"{int(gpu.load * 100)}%"
+                # Omregner MB til GB korrekt
+                vram_info = f"{gpu.memoryUsed / 1024:.1f} / {gpu.memoryTotal / 1024:.1f} GB"
+        except Exception as gpu_err:
+            print(f"GPU Monitor Error: {gpu_err}")
 
-    return jsonify({
-        'gpu_usage': gpu_info,
-        'vram_used': vram_info,
-        'cpu_percent': f"{cpu}%",
-        'ram_used': f"{mem.used / (1024**3):.1f} GB",
-        'ram_total': f"{mem.total / (1024**3):.1f} GB",
-        'disk_used': f"{disk.used / (1024**3):.1f} GB",
-        'uptime': str(datetime.timedelta(seconds=int(time.time() - psutil.boot_time())))
-    })
+        return jsonify({
+            'gpu_usage': gpu_info,
+            'vram_used': vram_info,
+            'cpu_percent': f"{cpu}%",
+            'ram_used': f"{mem.used / (1024**3):.1f} GB",
+            'ram_total': f"{mem.total / (1024**3):.1f} GB",
+            'disk_used': f"{disk.used / (1024**3):.1f} GB",
+            'uptime': str(datetime.timedelta(seconds=int(time.time() - psutil.boot_time())))
+        })
+    except Exception as e:
+        print(f"System route error: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
 
 
-@app.route('/api/emotion', methods=['GET'])
-def get_emotion():
-    return jsonify(emotion_engine.get_state())
-
+def clean_for_speech(text):
+    """Removes [PAINT] tags and (parenthetical descriptions) for the voice engine."""
+    # Removes [ANYTHING IN BRACKETS]
+    cleaned = re.sub(r'\[.*?\]', '', text)
+    # Removes (ANYTHING IN PARENTHESES)
+    cleaned = re.sub(r'\(.*?\)', '', cleaned)
+    return cleaned.strip()
 
 @app.route('/api/speak', methods=['POST'])
 def speak_route():
+    global last_activity
+    last_activity = time.time()
+    
     data = request.json
-    text = data.get('text', '')
-    if text: speak(text)
+    raw_text = data.get('text', '')
+    
+    if raw_text:
+        # Clean the text so Kyrethys doesn't speak hex codes or meta-commentary
+        speech_ready_text = clean_for_speech(raw_text)
+        
+        if speech_ready_text:
+            print(f"Queuing for vocalization: {speech_ready_text[:50]}...")
+            speak(speech_ready_text)
+            
     return jsonify({'result': 'OK'})
-
-
 @app.route('/api/launch', methods=['POST'])
 def launch():
     global last_activity
@@ -385,7 +444,6 @@ def launch():
     app_name = (data.get('app') or data.get('text') or '').strip()
     result = launch_app(app_name, app_paths)
     return jsonify({'result': result})
-
 
 @app.route('/video_feed')
 def video_feed():
@@ -418,6 +476,7 @@ def evolve_reality():
         return jsonify({"status": "success", "message": "Reality stitched."})
     else:
         return jsonify({"status": "error", "message": "Stitching failed."}), 500
+    
 @app.route('/api/emotion', methods=['GET'])
 def get_emotion():
     # This pulls the current state from the engine
@@ -425,6 +484,8 @@ def get_emotion():
     return jsonify(state)
 
 if __name__ == '__main__':
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
     print("--- Kyrethys SYSTEMS ONLINE ---")
     threading.Thread(target=idle_meditation_checker, daemon=True).start()
     threading.Thread(target=sleep_checker, daemon=True).start()

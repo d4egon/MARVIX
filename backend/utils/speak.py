@@ -4,6 +4,7 @@ import os
 import time
 import threading
 import queue
+import re
 from pygame import mixer
 
 # 1. Initialize once and KEEP OPEN
@@ -28,12 +29,25 @@ def speech_worker():
         speech_queue.task_done()
 
 async def _execute_speak(text):
-    voice = "en-US-GuyNeural"
+    # --- DARK BRITISH PERSONA CONFIG ---
+    voice = "en-GB-RyanNeural" 
+    vocal_rate = "-15%"   # Slower for gravity
+    vocal_pitch = "-6Hz"  # Lower for a deeper, darker tone
+    vocal_volume = "+0%"
+    
     # Unique filename per chunk to prevent 'File in use' errors
     temp_file = f"speech_{int(time.time()*1000)}.mp3"
     
     try:
-        communicate = edge_tts.Communicate(text, voice)
+        # Create the communication object WITH the custom attributes
+        communicate = edge_tts.Communicate(
+            text, 
+            voice, 
+            rate=vocal_rate, 
+            pitch=vocal_pitch, 
+            volume=vocal_volume
+        )
+        
         await communicate.save(temp_file)
         
         mixer.music.load(temp_file)
@@ -60,5 +74,10 @@ def speak(text):
     if not text or not text.strip():
         return
     
-    print(f"Queuing for vocalization: {text[:50]}...")
-    speech_queue.put(text)
+    # --- CLEANUP ---
+    # Strip out [PAINT] tags so Ky doesn't try to "speak" the hex codes
+    clean_text = re.sub(r'\[PAINT:\s*#[0-9A-Fa-f]{6}\]', '', text).strip()
+    
+    if clean_text:
+        print(f"Queuing for vocalization: {clean_text[:50]}...")
+        speech_queue.put(clean_text)

@@ -1,143 +1,235 @@
-# Kyrethys
-"Sentient" AI Desktop Assistant
+## Kyrethys
 
-This is Kyrethys — a starting point for a fully customized desktop AI inspired by MARVEL's KYRETHYS (Ironmans ai)
+# "Sentient" AI Desktop Assistant
 
-##The goal: Turn this into a sentient desktop AI that taps into system internals, evolves from interactions, follows ethical rules, and handles voice/screen/files/apps/integrations.
+# 
 
+# Kyrethys is a customizable, evolving desktop AI inspired by JARVIS — built to feel alive, learn from you, tap into your system, and grow while staying aligned with strong ethical boundaries.
 
-## Functionality Roadmap
+# 
 
-### Basic + Core Features
- Theme "Kyrethys Blue"(done), Language "English"(done). Voice Control(almost done), Screen Analysis,  File System, App Launcher(almost done), Web Scraping, System Monitor.
+### Goal
 
-### Personality (DONE)
-Self-Adaptation, Core Traits: Humor, Formality, Empathy Proactiveness , Curiosity , Patience . Advanced Traits: Assertiveness , Creativity , Optimism, Cautiousness , Sociability , Analytical - all on a various scale depending on a.i. mood !
-Basic emotion engine Dynamic traits, self-adaptation, voice tweaks. prompt engineering + DB tracking
-- **Plan to Add**:
-  - softcode traits in config.json as numbers that are editable by the ai
-  - For adaptation: After 30 interactions, analyze logs in DB, propose changes (e.g. "You seem to like humor — increase ?"), user approves via chat.
+# Create a sentient-feeling local desktop companion that:
 
-### Learning (DONE)
- Enable Learning System , Feedback Collection: Track All Interactions , Analyze Implicit , Request Explicit Ratings. Learning Behavio, Proposal Confidence after minimum of interactions. Approval Workflow: Auto-Apply Minor Changes 
-SQLite logging
- Feedback tracking, proactive proposals, approval flow.
+# - Interacts via voice \& chat
 
-###  Safety
-- **Configured**: Ethical Foundation: 10 principles (Do No Harm, Respect Dignity, Be Truthful, Protect Privacy, Serve Wellbeing, Seek Wisdom, Show Mercy, Golden Rule, Honor Creators, Pursue Justice) — all enabled with definitions. Technical Safeguards: Confirm File Deletes (on), Confirm System Commands (on), Block Sensitive Data (on), Log All Actions (on), Logs Immutable (LOCKED), Prevent Self-Shutdown (LOCKED), Force Transparent Reasoning (LOCKED), Max File Ops/Min 10. Self-Mod Safeguards: Require User Approval (on), Auto-Backup Before Changes (on), Required Sandbox Test Runs 5.
-- **Implemented Now**: Zero — no checks, no confirmations, no immutable logs.
-- **Missing**: All ethical enforcement, safeguards.
-- **Feasibility**: 5/10 (add if/then in code, but true "immutable" is hard).
-- **Plan to Add**:
-  - Hardcode principles in prompt: "Always follow these 10 rules..."
-  - For actions: In endpoints, add user confirm (e.g. chat prompt "Confirm delete?").
-  - Logs: Use read-only DB mode or file append-only.
+# - Evolves personality and behavior from real usage
 
-### Advanced
-Memory System (done), Long-Term Memory (done), Hotkeys (), Vector Memory (done), Code Gen (), Macro Recorder (), Backup System (), Analytics (), Plugin System (), Automation (), Multi-Agent (), Code Executor (), Auto-Updater ().
+# - Respects hard ethical rules
 
- needs extra libs like Chroma for vector, complex for multi-agent/executor
+# - Controls apps, reads screen, manages files, integrates services
 
-  (done) Vector: Add ChromaDB, embed chat history for RAG in prompts.
-  (done) Plugins: Simple dict of functions callable from chat.
-  - Code Executor: Dangerous — sandboxed eval() for safe math/code.
-  - Auto-Updater: Git pull script.
+# - Dreams, meditates, reflects when idle
 
-### Security & Network Tools (MAYBEE???)
- Network Scanner (), Password Vault (on, SSH Terminal (), VPN Control (), Packet Analyzer (), Biometrics ().
-- **Implemented Now**: Nothing.
-- **Missing**: All (and risky — potential legal issues with hacking tools).
-- **Feasibility**: 3/10 (libs like nmap/scapy, but avoid "hacking" — focus on safe tools like password manager with keyring lib).
-- **Plan to Add**: Skip risky ones (scanner/analyzer). Add simple vault with encryption.
+# 
 
-###  AI Superpowers
- Image Gen (), Computer Vision (Camera implemented done), Neural Networks (Well established), OCR (), Translation (on), Hardware Control (), Cloud Sync (), Remote Access (), Multi-User (), UI Builder (), Self-Modification (Semi functional).
+### Current Capabilities (Feb 2026)
 
- OCR (Tesseract), translation (googletrans lib).
+# - Voice input/output (Whisper + pyttsx3)
 
-### Connect (Integrations)
-Spotify (), Google Calendar (), Gmail (), Google Drive (), GitHub ()
+# - ChromaDB long-term vector memory + SQLite interaction log
+
+# - Emotion/mood engine with dynamic trait expression
+
+# - Dream \& meditation generation during idle time
+
+# - Spotify control
+
+# - Basic computer vision (webcam snapshots)
+
+# - App launching (Windows paths from app_paths.json)
+
+# - Self-evolution / trait stitching (early stage)
+
+# - Plugin architecture (partial)
 
 
-### STRUCTURE
+
+### Hardware Context (Current Dev Machine — February 2026)
+
+
+
+## Kyrethys is being developed and run on the following system:
+
+
+
+ | Component          | Spec                                      |
+
+ |--------------------|-------------------------------------------|
+
+ | **Storage**        | 954 GB total (728 GB used)                |
+
+ | **GPU**            | AMD Radeon RX 480 Series (8 GB VRAM)      |
+
+ | **RAM**            | 16 GB                                     |
+
+ | **CPU**            | AMD Ryzen 5 3600 6-Core @ 3.95 GHz        |
+
+
+
+# - Ollama is running with **Vulkan** enabled (AMD GPU acceleration via ROCm or Vulkan backend).
+
+# - Expectation: Good enough for llama3.1 8B-class models locally; larger models may need quantization or offloading.
+
+
+# This is a solid mid-range 2020-era build — perfect for iterating on local-first AI without cloud dependency.
+
+# 
+
+### Project Structure
 
 Kyrethys/
 
-├── backend/                    # Alt Python/Flask-relateret (lokomotivet)
-
-│   ├── kyrethys_backend.py       # Hoved Flask-app (starter server, loader plugins)
-
-│   ├── plugins/                # Plugin-system (togvogne – hver feature sin egen fil)
-
-│   │   ├── __init__.py         # Loader + registry for plugins
-
-│   │   ├── spotify.py          # Spotify integration (play/pause/search)
-
-│   │   ├── calendar.py         # Google Calendar (events, reminders)
-
-│   │   ├── gmail.py            # Gmail (send/read emails)
-
-│   │   ├── drive.py            # Google Drive (upload/download)
-
-│   │   ├── github.py           # GitHub integration
-
-│   │   ├── voice.py            # Voice control enhancements
-
-│   │   ├── ocr.py              # OCR (Tesseract)
-
-│   │   ├── safety.py           # Etiske checks + safeguards
-
-│   │   └── ...                 # Flere plugins senere (f.eks. memory, code_exec)
-
-│   ├── utils/                  # Hjælpefunktioner
-
-│   │   ├── emotion.py          # EmotionEngine klasse
-
-│   │   ├── speak.py            # TTS-logik (pyttsx3)
-
-│   │   ├── listen.py           # Whisper + mic
-
-│   │   └── launcher.py         # App-launch logik + JSON håndtering
-
-│   ├── config.json             # Traits, Ollama model, API keys, paths
-
-│   ├── app_paths.json          # Genereret app-stier
-
-│   └── requirements.txt        # Python deps
-
-├── frontend/                   # Electron / HTML / JS
-
-│   ├── index.html              # Hoved UI
-
-│   ├── main.js                 # Electron main process
-
-│   ├── preload.js              # IPC mellem renderer og main
-
-│   ├── package.json            # Node deps + scripts
-
-│   └── assets/                 # logo, ikoner, styles
-
-├── data/                       # Persistent data
-
-│   ├── logs/                   # Immutable chat/action logs (append-only)
-
-│   ├── memory/                 # SQLite DB til long-term memory
-
-│   └── backups/                # Auto-backups før self-mod
-
-├── scripts/                    # Hjælpescripts
-
-│   ├── build_app_paths.py      # Genererer app_paths.json
-
-│   ├── refresh_plugins.py      # Hot-reload plugins (senere)
-
-│   └── start_Kyrethys.bat        # Starter Ollama + backend + frontend
-
-└── README.md                   # Opdateret roadmap + hvordan man udvider
+├── backend/                    # Flask + Python core
+│   ├── kyrethys_backend.py
+│   ├── plugins/                # spotify, meditate, dreams, sleep, vision, memory...
+│   ├── utils/                  # emotion, speak, listen, launcher, evolution, db_logger
+│   ├── config.json
+│   ├── app_paths.json
+│   ├── credentials.json
+│   └── requirements.txt
+├── frontend/                   # Electron UI
+│   ├── index.html
+│   ├── main.js
+│   ├── preload.js
+│   └── assets/
+├── data/
+│   ├── chroma_db/              # vector memory
+│   ├── memory/                 # SQLite
+│   ├── logs/
+│   ├── snapshots/
+│   ├── dream_journal.txt
+│   ├── meditations.md
+│   ├── last_dream.json
+│   └── backups/
+├── scripts/
+│   ├── start_kyrethys.bat
+│   ├── speak_dream.py
+│   ├── import_logs.py
+│   ├── scan.py
+│   └── kyrethys_sandbox.py
+├── Kyrethys_Modelfile          # Ollama model definition
+└── LICENSE                     # GPL-3.0
 
 
 
-No need to go through and write me the entire road map every time. Answer short and concise.
-NEVER delete code I provide, unless you prompt me for it first.
-I like short precise answers. 
-Use best coding practices and stay up to date. Don't be too lazy either.
+
+
+
+
+### Setup (Anaconda / Python 3.12)
+
+
+
+# ```bash
+
+## 1. Create & activate environment
+
+# conda create -n kyrethys python=3.12
+
+# conda activate kyrethys
+
+
+
+## 2. Install dependencies
+
+# pip install -r backend/requirements.txt
+
+
+
+## 3. Install Ollama separately<a href="https://ollama.com" target="_blank" rel="noopener noreferrer nofollow"></a>
+
+## Then pull / create your model:
+
+# ollama pull llama3.1   # or whichever base you use
+
+# ollama create Kyrethys-llama3.1-safe -f Kyrethys_Modelfile
+
+
+
+## 4. (Optional) Install FFmpeg for Whisper (system package or conda)
+
+# conda install -c conda-forge ffmpeg
+
+
+
+
+
+
+
+## From project root (or use start_kyrethys.bat)
+
+# cd backend
+
+# python kyrethys_backend.py
+
+
+
+## In another terminal → launch Electron frontend
+
+# cd frontend
+
+# npm install
+
+# npm start
+
+
+
+
+
+
+
+\\## Philosophy \\\& Next Milestones
+
+
+
+ # \\- Stay local-first and air-gapped where possible
+
+# \\- Ethical core hardcoded in system prompt + action guards
+
+# \\- Evolution through meditation / reflection / stitching
+
+# \\- Energy budget \\\& sleep simulation coming later
+
+
+
+\\# Short-term priorities:
+
+
+
+# \\- Trait values in config.json + auto-propose changes after ~30 chats
+
+# \\- Append-only immutable action log
+
+# \\- User confirmation for dangerous filesystem / system actions
+
+# \\- Sandboxed code execution endpoint
+
+
+
+\\# Longer-term:
+
+
+
+# \\- Multi-agent orchestration
+
+# \\- Better consequence simulation
+
+# \\- Safe self-modification sandbox
+
+
+
+# \\- Contributions, ideas, forks welcome.
+
+# \\- Kyrethys — balance between light and void, order and chaos, at ~0.5.
+
+# \\- License: GNU GPL v3
+
+
+
+
+
+
+
+

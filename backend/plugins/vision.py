@@ -1,59 +1,98 @@
 import cv2
 import os
 import datetime
-import threading # Tilføjet for at sikre trådsikkerhed
+import threading
+import mediapipe as mp
 
 class KyrethysVision:
     def __init__(self):
-        self.camera_on = True # Default state
-        self.cap = None
+        self.camera_on = True 
         self.camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-        self.snapshot_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'snapshots')
         
-        # Gem den sidste frame her for at undgå hardware-konflikt
+        self.snapshot_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'snapshots')
         self.last_frame = None
-        self.lock = threading.Lock() # Sikrer at vi ikke læser/skriver samtidigt
+        self.lock = threading.Lock()
+
+        # --- MediaPipe Setup ---
+        self.mp_face_mesh = mp.solutions.face_mesh
+        self.face_mesh = self.mp_face_mesh.FaceMesh(
+            static_image_mode=False,
+            max_num_faces=1,
+            refine_landmarks=True,
+            min_detection_confidence=0.5,
+            min_tracking_confidence=0.5
+        )
+        self.latest_expression_summary = "Neutral" # Default state
+        # -----------------------
 
         if not os.path.exists(self.snapshot_path):
             os.makedirs(self.snapshot_path)
 
     def toggle_camera(self, state):
         self.camera_on = state
-        # Use getattr to safely check for the attribute
-        cap = getattr(self, 'cap', None)
-        
-        if not state and cap:
-            cap.release()
-            self.cap = None # Clear it after releasing
-            print("--- Kyrethys closed his eyes ---")
-        elif state:
-            import cv2
-            self.cap = cv2.VideoCapture(0)
+        if state:
+            if not self.camera.isOpened():
+                self.camera.open(0, cv2.CAP_DSHOW)
             print("--- Kyrethys opened his eyes ---")
+        else:
+            print("--- Kyrethys closed his eyes ---")
 
-    def take_snapshot(self): # Omdøbt fra capture_snapshot så det matcher dit kald i backend
+    def analyze_face(self, landmarks):
+        """
+        Translates raw landmark dots into a human-readable string.
+        Kyrethys uses this string to 'understand' your face.
+        """
+        # Example logic: Detect smile via mouth corner distance (Landmarks 61 and 291)
+        upper_lip = landmarks.landmark[13]
+        lower_lip = landmarks.landmark[14]
+        mouth_opening = abs(upper_lip.y - lower_lip.y)
+        
+        if mouth_opening > 0.05:
+            return "Speaking/Surprised"
+        
+        # You can add more complex math here for brows, eyes, etc.
+        return "Calm/Observing"
+
+    def take_snapshot(self):
         with self.lock:
             if self.last_frame is not None:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = f"snap_{timestamp}.jpg"
                 full_path = os.path.join(self.snapshot_path, filename)
                 cv2.imwrite(full_path, self.last_frame)
-                print(f"DEBUG: Snapshot gemt: {filename}")
-                return filename 
+                
+                # We return the filename AND the expression detected at this moment
+                return {
+                    "filename": filename,
+                    "expression": self.latest_expression_summary
+                }
         return None
 
     def generate_frames(self):
         while True:
+            if not self.camera_on:
+                continue
+
             success, frame = self.camera.read()
             if not success: 
                 break
             
-            # Vend billedet rigtigt
             frame = cv2.flip(frame, -1)
             
-            # Opdater 'last_frame' så snapshot-funktionen har noget at arbejde med
+            # --- Face Detection Logic ---
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = self.face_mesh.process(rgb_frame)
+            
+            if results.multi_face_landmarks:
+                landmarks = results.multi_face_landmarks[0]
+                self.latest_expression_summary = self.analyze_face(landmarks)
+                
+                # Optional: Draw the dots on the live feed for debugging
+                # mp.solutions.drawing_utils.draw_landmarks(frame, landmarks)
+            # ----------------------------
+
             with self.lock:
                 self.last_frame = frame.copy()
             
