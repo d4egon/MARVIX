@@ -55,20 +55,24 @@ def extract_face_mesh(image_path):
     print("DEBUG: Kunne ikke finde ansigt (tjek lys/vinkel).")
     return None
 
-def log_interaction(user_message: str, assistant_response: str, emotion_state: dict):
-    # 1. Fang snapshot
-    snapshot_filename = Kyrethys_eyes.take_snapshot()
+def log_interaction(user_message: str, assistant_response: str, emotion_state: dict, snapshot_filename: str = None):
+    # Vi har fjernet Kyrethys_eyes.take_snapshot() herfra for at undgå dobbelt-blink!
     
-    # 2. Udtræk koordinater
+    # 2. Udtræk koordinater (kun hvis vi har fået et filnavn fra backenden)
     coords_json = None
     if snapshot_filename:
-        # Finder den rigtige sti til billedet i din backend-struktur
-        img_path = os.path.join(os.path.dirname(DB_PATH), '..', 'snapshots', snapshot_filename)
-        coords_json = extract_face_mesh(img_path)
+        # DB_PATH er i backend/utils/../data/memory/
+        # Vi skal 3 niveauer op for at ramme backend-roden
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(DB_PATH)))
+        img_path = os.path.join(base_dir, 'data', 'snapshots', snapshot_filename)
+        
+        if os.path.exists(img_path):
+            coords_json = extract_face_mesh(img_path)
+        else:
+            print(f"DEBUG: Kunne ikke finde filen til FaceMesh: {img_path}")
 
     # 3. Gem i DB
     with sqlite3.connect(DB_PATH, check_same_thread=False, timeout=10) as conn:
-        conn.execute("PRAGMA journal_mode=WAL;")
         cursor = conn.cursor()
         now = datetime.utcnow().isoformat()
         
@@ -80,7 +84,7 @@ def log_interaction(user_message: str, assistant_response: str, emotion_state: d
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             now, user_message, assistant_response, 
-            emotion_state.get('mood', 'unknown'),
+            emotion_state.get('mood', 'stable'),
             emotion_state.get('energy', 0), 
             emotion_state.get('curiosity', 0), 
             emotion_state.get('color', '#00d4ff'),

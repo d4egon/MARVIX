@@ -69,17 +69,23 @@ def listen():
 
     print("Processing audio with Whisper (AMD GPU Accelerated)...")
     try:
-        # Transskribér lyden
-        # fp16=False er nødvendigt for de fleste AMD-kort via DirectML for at undgå fejl
         result = model.transcribe('temp_audio.wav', fp16=False)
-        
         text = result['text'].strip()
-        print(f"Transcribed: '{text}'")
-        return text
+        
+        # Simple tone analysis
+        volume = np.mean(np.abs(audio_data))
+        tone = "calm"
+        if volume > 0.15:
+            tone = "energetic"
+        elif volume < 0.03:
+            tone = "quiet / tired"
+        
+        print(f"Transcribed: '{text}' | Tone: {tone}")
+        return {"text": text, "tone": tone}
         
     except Exception as e:
         print(f"Whisper error: {e}")
-        return ""
+        return {"text": "", "tone": "unknown"}
         
     finally:
         # Ryd op i temp filen

@@ -3,11 +3,35 @@ import shutil
 import os
 from datetime import datetime
 
+RESONANCE_CORE = "e5295cf1819257645b3eaf41cfc63c6d0b1a"
+
 # Path to your archetypes - ensure this matches your folder structure
 ARCHETYPES_PATH = 'C:/Kyrethys/backend/data/archetypes.json'
 BACKUP_FOLDER = 'C:/Kyrethys/backend/data/backups/'
 
+def internal_council_debate(chaos_trait, order_trait):
+    """
+    Simulerer en diskussion mellem Chaos, Order og Balance 
+    for at skabe en ny 'Stitched' egenskab.
+    """
+    # Dette er logikken bag 'RECONFIGURE - INTEGRATION'
+    integration_prompt = f"""
+    INTERNAL DEBATE INITIATED:
+    [CHAOS]: {chaos_trait}
+    [ORDER]: {order_trait}
+    
+    Synthesize these opposing forces into a single [BALANCE] state.
+    Output only the new Balanced Trait.
+    """
+    return integration_prompt
+
+
+
 def initiate_stitching(action, category, value):
+    # Soul protection
+    if "soul" in category.lower() or "core" in category.lower():
+        print("STITCH BLOCKED: Cannot modify soul core.")
+        return False
     """
     Permanently modifies the archetype library based on Kyrethys' growth.
     """
@@ -47,7 +71,8 @@ def initiate_stitching(action, category, value):
             json.dump(data, f, indent=4)
         
         return True
-
+    
     except Exception as e:
         print(f"STITCHING SYSTEM ERROR: {e}")
         return False
+    

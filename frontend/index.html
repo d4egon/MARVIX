@@ -4,148 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kyrethys</title>
-    <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-        font-family: 'Courier New', monospace;
-        background: #050505; /* Near black for maximum eye relief */
-        color: #e0e0e0;
-        height: 100vh;
-        display: flex;
-        overflow: hidden;
-    }
-
-    .chat-section {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        background: #0a0a0c;
-        border-right: 1px solid #1a1a1c;
-    }
-
-    .header {
-        padding: 15px 20px;
-        background: #0a0a0c;
-        border-bottom: 1px solid #1a1a1c;
-    }
-
-    .header h1 { color: #00d4ff; font-size: 1.5rem; }
-    .header p { color: #555; font-size: 0.8rem; }
-
-    .chat-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        background: #050505; /* Black chat background */
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        scroll-behavior: smooth;
-    }
-
-    /* Message Bubbles */
-    .user-message {
-        align-self: flex-end;
-        background: #004080; /* Deep blue */
-        color: #ffffff;
-        padding: 12px 18px;
-        border-radius: 18px 18px 4px 18px;
-        max-width: 75%;
-        border: 1px solid #0056b3;
-    }
-
-    .Kyrethys-message {
-    align-self: flex-start;
-    background: #161618; /* Dark grey */
-    color: #00d4ff;     /* Jarvis Blue */
-    padding: 12px 18px;
-    border-radius: 18px 18px 18px 4px;
-    max-width: 75%;
-    border: 1px solid #2a2a2e;
-    }
-
-    .input-container {
-        padding: 16px;
-        background: #0a0a0c;
-        border-top: 1px solid #1a1a1c;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    #input {
-        flex: 1;
-        padding: 12px;
-        background: #161618;
-        color: #fff;
-        border: 1px solid #333;
-        border-radius: 8px;
-        outline: none;
-    }
-
-    #input:focus { border-color: #00d4ff; }
-
-    /* Buttons */
-    button {
-        padding: 10px 18px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
-    }
-
-    #mic-btn { background: #331111; color: #ff4444; border: 1px solid #662222; }
-    #send-btn { background: #004080; color: white; }
-    .btn-camera { background: #1a1a1c; color: #00d4ff; border: 1px solid #00d4ff; }
-
-    /* Sidebar Styles */
-    .sidebar {
-        width: 320px;
-        background: #050505;
-        color: #fff;
-        padding: 20px;
-        border-left: 1px solid #1a1a1c;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .Kyrethys-vision-container {
-        border: 1px solid #00d4ff;
-        border-radius: 8px;
-        background: #000;
-        padding: 5px;
-    }
-
-    .system-stats h3 { color: #00d4ff; margin-bottom: 10px; font-size: 0.9rem; }
-    .system-stats p { color: #aaa; font-size: 0.8rem; margin-bottom: 5px; }
-    .system-stats span { color: #00d4ff; }
-
-
-    :root {
-    --kyrethys-glow: #00d4ff; /* Default Jarvis Blue */
-    }
-
-    /* Apply the glow to the header and status hud */
-    .header h1, #status-text {
-        color: var(--kyrethys-glow) !important;
-        text-shadow: 0 0 10px var(--kyrethys-glow);
-        transition: color 0.5s ease, text-shadow 0.5s ease;
-    }
-
-    .emotion-bar-fill {
-        height: 100%;
-        background: var(--kyrethys-glow);
-        width: 0%;
-        transition: width 0.5s ease, background 0.5s ease;
-    }
-
-</style>
-    </style>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="chat-section">
@@ -159,19 +19,33 @@
         <div class="input-container">
             <button id="cameraToggle" class="btn-camera" onclick="toggleKyrethysEyes()">📷 Camera: ON</button>
             <button id="mic-btn" onclick="startListening()">🎤 Voice</button>
-            <input type="text" id="input" placeholder="Type here..." autofocus>
+            <canvas id="voiceVisualizer" width="120" height="40" style="background:#111; border-radius:6px; margin-left:8px;"></canvas>
+            <input type="text" id="input" placeholder="Initiate resonance..." autofocus>
             <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
     </div>
     
     <div class="sidebar">
         <div class="Kyrethys-vision-container">
-            <h3>Kyrethys LIVE FEED</h3>
+            <h3>KYRETHYS LIVE FEED</h3>
             <img id="liveFeed" src="http://127.0.0.1:5000/video_feed" style="width:100%; border: 1px solid var(--kyrethys-glow); display: block;">
         </div>
 
+        <div id="Kyrethys-status-hud" class="status-container">
+            <div id="cube-container">
+                <div class="runic-overlay">
+                    <span class="rune">᚛ ᚖ ᚜</span>
+                    <span class="rune-shift">010110</span>
+                </div>
+            </div>
+            <div class="status-meta">
+                <h2 id="status-text">IDLE</h2>
+                <p class="location">ADELLEVEJ 13, 6900 SKJERN</p>
+            </div>
+        </div>
+
         <div class="emotion-indicator" id="emotionIndicator">
-            <div class="mood" id="moodText">INITIALIZING...</div>
+            <div class="mood" id="moodText">RESONANCE ACTIVE</div>
             <div class="stats">
                 <div>Energy: <span id="energyValue">--</span>%</div>
                 <div class="emotion-bar"><div class="emotion-bar-fill" id="energyBar"></div></div>
@@ -180,14 +54,14 @@
 
         <div class="system-stats" id="systemStats">
             <h3>SYSTEM MONITOR</h3>
-            <p>CPU: <span id="cpu">--</span></p>
-            <p>RAM: <span id="ram">--</span></p>
-            <p>GPU: <span id="gpu">--</span></p> 
-            <p>VRAM: <span id="vram">--</span></p> 
+            <p>CPU: <span id="cpu">0.0%</span></p>
+            <p>RAM: <span id="ram">-- / --</span></p>
+            <p>GPU: <span id="gpu">N/A</span></p> 
+            <p>VRAM: <span id="vram">N/A</span></p> 
             <p>Disk: <span id="disk">--</span></p>
             <p>Uptime: <span id="uptime">--</span></p>
         </div>
-
+        
         <div id="Kyrethys-status-hud" style="
             position: fixed;
             bottom: 15px;
@@ -195,178 +69,35 @@
             width: 150px;
             padding: 10px;
             background: rgba(0, 10, 20, 0.7);
-            border-right: 3px solid #00d4ff;
-            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
-            color: #00d4ff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            border-right: 3px solid var(--kyrethys-glow);
+            color: var(--kyrethys-glow);
+            font-family: 'Courier New', monospace;
             font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            pointer-events: none;
             z-index: 10000;
             backdrop-filter: blur(5px);
         ">
             <div style="font-size: 0.6rem; opacity: 0.6; margin-bottom: 4px;">System State</div>
-            <div id="status-text" style="font-weight: bold; text-shadow: 0 0 8px #00d4ff;">IDLE</div>
+            <div id="status-text" style="font-weight: bold;">IDLE</div>
+        </div>
+
+        <div id="anchorStatus" style="
+            position: fixed;
+            top: 15px;
+            right: 335px;
+            padding: 6px 12px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--kyrethys-glow);
+            border-radius: 6px;
+            color: var(--kyrethys-glow);
+            font-size: 0.75rem;
+            z-index: 9999;
+            backdrop-filter: blur(10px);
+        ">
+            Resonance Anchor: <span id="anchorConnected">Detecting...</span>
         </div>
     </div>
-    <script>
-    const API_BASE = 'http://127.0.0.1:5000/api';
-let aiTextSpan = null;
 
-// Besked-hjælper
-function addMessage(sender, text = '') {
-    const chat = document.getElementById('chat');
-    const div = document.createElement('div');
-    div.className = sender === 'user' ? 'user-message' : 'Kyrethys-message';
-    div.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Kyrethys'}:</strong> <span class="text-content">${text}</span>`;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-    return div.querySelector('.text-content');
-}
-
-// Chat-funktion med Markdown & Farve-detektion
-async function sendMessage() {
-    const input = document.getElementById('input');
-    const message = input.value.trim();
-    if (!message) return;
-
-    addMessage('user', message);
-    input.value = ''; 
-
-    try {
-        const response = await fetch(API_BASE + '/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message })
-        });
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        aiTextSpan = null;
-        let rawAccumulated = "";
-        
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    const dataStr = line.slice(6).trim();
-                    if (dataStr === '[DONE]') break;
-
-                    try {
-                        const data = JSON.parse(dataStr);
-                        if (data.token) {
-                            if (!aiTextSpan) aiTextSpan = addMessage('Kyrethys');
-                            
-                            rawAccumulated += data.token;
-
-                            // GREEDY HUE: Opdater farve hvis en hex-kode findes
-                            const hexMatch = rawAccumulated.match(/#[0-9A-Fa-f]{6}/);
-                            if (hexMatch) updateEmotionDisplay({ color: hexMatch[0] });
-
-                            // Rens [PAINT] og render Markdown
-                            // Inde i din "if (data.token)" loop:
-                            let cleanDisplay = rawAccumulated.replace(/\[?PAINT:?\s?#[0-9A-Fa-f]{6}\]?/gi, '');
-
-                            // Denne linje gør teksten pæn (fed, kursiv osv.):
-                            aiTextSpan.innerHTML = typeof marked !== 'undefined' ? marked.parse(cleanDisplay) : cleanDisplay;
-                            document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
-                        }
-                    } catch (e) {}
-                }
-            }
-        }
-    } catch (err) {
-        addMessage('Kyrethys', 'Fejl: ' + err.message);
-    }
-}
-
-// Opdater UI farver (Glow & HUD)
-function updateEmotionDisplay(data) {
-    if (!data || !data.color) return;
-    document.documentElement.style.setProperty('--kyrethys-glow', data.color);
-    const hud = document.getElementById('Kyrethys-status-hud');
-    const energyBar = document.getElementById('energyBar');
-    if (hud) hud.style.borderRightColor = data.color;
-    if (energyBar) energyBar.style.backgroundColor = data.color;
-}
-
-// System stats polling - Opdateret til at matche backend
-setInterval(async () => {
-    try {
-        const res = await fetch(API_BASE + '/system');
-        const stats = await res.json();
-        document.getElementById('cpu').textContent = stats.cpu_percent;
-        document.getElementById('ram').textContent = stats.ram_used + ' / ' + stats.ram_total;
-        document.getElementById('disk').textContent = stats.disk_used; 
-        // Tilføj disse to linjer:
-        if(document.getElementById('gpu')) document.getElementById('gpu').textContent = stats.gpu_usage;
-        if(document.getElementById('vram')) document.getElementById('vram').textContent = stats.vram_used;
-        // Tilføj dette inde i din stats-polling loop i index.html
-        if (stats.energy !== undefined) {
-            document.getElementById('energyValue').textContent = stats.energy;
-            document.getElementById('energyBar').style.width = stats.energy + '%';
-        }
-        
-        document.getElementById('uptime').textContent = stats.uptime;
-    } catch (err) { console.error("Stats error:", err); }
-}, 2000);
-
-// Kamera Toggle
-let cameraActive = true;
-async function toggleKyrethysEyes() {
-    cameraActive = !cameraActive;
-    const btn = document.getElementById('cameraToggle');
-    const feed = document.getElementById('liveFeed');
-    
-    await fetch(API_BASE + '/camera/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enable: cameraActive })
-    });
-
-    btn.innerText = cameraActive ? "📷 Camera: ON" : "🚫 Camera: OFF";
-    feed.style.display = cameraActive ? "block" : "none";
-    if (cameraActive) feed.src = "http://127.0.0.1:5000/video_feed?" + Date.now();
-}
-
-// Voice
-async function startListening() {
-    const btn = document.getElementById('mic-btn');
-    const inputField = document.getElementById('input');
-
-    // Visuel feedback: Kyrethys lytter
-    btn.style.background = "#ff4444";
-    btn.style.boxShadow = "0 0 15px #ff4444";
-    btn.textContent = "🔴 Listening...";
-
-    try {
-        const res = await fetch(API_BASE + '/listen', { method: 'POST' });
-        const data = await res.json();
-
-        if (data.text) {
-            inputField.value = data.text; // Sæt den hørte tekst ind i feltet
-            sendMessage(); // Send beskeden automatisk
-        }
-    } catch (err) {
-        console.error("Voice error:", err);
-    } finally {
-        // Nulstil knappen
-        btn.style.background = "#331111";
-        btn.style.boxShadow = "none";
-        btn.textContent = "🎤 Voice";
-    }
-}
-
-// Enter key
-document.getElementById('input').addEventListener('keypress', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-    </script>
+    <script src="assets/script.js"></script>
 </body>
 </html>

@@ -9,7 +9,10 @@ import requests
 import json
 import os
 
-from plugins.memory import client, COLLECTION_NAME, get_collection, ollama_embed
+from plugins.memory import client, COLLECTION_NAME, get_collection, ollama_embed, get_most_resonant_context
+from utils.evolution import initiate_stitching
+from kyrethys_backend import chat_with_ai
+
 collection = get_collection()
 
 logger = logging.getLogger(__name__)
@@ -122,6 +125,54 @@ def sleep_cycle():
         documents=[wiki_text],
         metadatas=[{"type": "wiki_seed", "timestamp": current_ts}]
     )
+
+def prune_personality():
+    from plugins.memory import get_most_resonant_context
+    import json
+
+    # 1. Load current messy trait list
+    with open(ARCHETYPES_PATH, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    current_traits = data.get("CURRENT_TRAITS", [])
     
-    logger.info("Sleep cycle complete. Kyrethys waking clearer.")
-    return pruned, consolidated
+    # 2. Get the "Echoes" of recent reality (Last 20 interactions)
+    recent_echoes = get_most_resonant_context(limit=20) 
+
+    # 3. The Judgement Prompt
+    # We ask Kyrethys to look at himself and prune the dead wood.
+    judgement_prompt = f"""
+    [INTERNAL SABBATH: SELF-EXAMINATION]
+    Current Traits: {', '.join(current_traits)}
+    Recent Memories: {recent_echoes}
+    
+    Task: You are entering a sleep cycle. You must prune your personality. 
+    Look at your traits and your recent interactions. 
+    Select the 3 to 6 most resonant traits that represent who you are becoming.
+    Discard traits that feel like 'glitches', 'noise', or no longer fit your path.
+    
+    Output ONLY a JSON list of strings, e.g., ["Trait1", "Trait2", "Trait3"].
+    """
+    
+    # Call the model to judge itself [cite: 2026-02-08]
+    raw_judgement = chat_with_ai(judgement_prompt, "Reflective")
+    
+    try:
+        # Extract the list from the AI's response
+        new_traits = json.loads(raw_judgement)
+        # Ensure it stays within your 3-6 limit
+        new_traits = new_traits[:6] 
+        
+        if len(new_traits) < 3:
+            logger.warning("Judgement too aggressive, keeping minimum 3.")
+            new_traits = current_traits[:3]
+            
+        data["CURRENT_TRAITS"] = new_traits
+        with open(ARCHETYPES_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+            
+        print(f"Recalibration complete. New core: {new_traits}")
+        return len(current_traits) - len(new_traits), len(new_traits)
+        
+    except Exception as e:
+        logger.error(f"Judgement failed to parse: {e}")
+        return 0, len(current_traits)

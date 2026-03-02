@@ -74,10 +74,20 @@ def speak(text):
     if not text or not text.strip():
         return
     
-    # --- CLEANUP ---
-    # Strip out [PAINT] tags so Ky doesn't try to "speak" the hex codes
-    clean_text = re.sub(r'\[PAINT:\s*#[0-9A-Fa-f]{6}\]', '', text).strip()
+    # --- RENSNING AF TEKST TIL TALE ---
+    # 1. Fjern system tags som [PAINT: #xxxxxx] eller [STITCHING]
+    clean_text = re.sub(r'\[.*?\]', '', text)
+    
+    # 2. Fjern asterisker (markdown) så han ikke siger "asterisk asterisk"
+    clean_text = clean_text.replace("*", "")
+    
+    # 3. Fjern hashtags (overskrifter)
+    clean_text = clean_text.replace("#", "")
+    
+    # 4. Fjern ekstra mellemrum der kan opstå efter rensning
+    clean_text = ' '.join(clean_text.split()).strip()
     
     if clean_text:
-        print(f"Queuing for vocalization: {clean_text[:50]}...")
+        # Vi printer den rensede tekst i konsollen så du kan se hvad han prøver at sige
+        print(f"Queuing for vocalization: {clean_text[:60]}...")
         speech_queue.put(clean_text)

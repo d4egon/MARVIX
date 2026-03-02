@@ -131,3 +131,25 @@ def retrieve_relevant(query, n_results=8):
         context += f"[{ts} | {typ} | {expr} | rel {1-dist:.2f}]: {doc[:280]}...\n"
     
     return context
+
+def get_most_resonant_context(limit=25):
+    """
+    Retrieves the most recent documents from ChromaDB to provide 
+    a context window for personality pruning.
+    """
+    try:
+        collection = get_collection()
+        # We fetch the most recent entries to see what Kyrethys has been 'focused' on
+        results = collection.get(
+            limit=limit,
+            include=["documents", "metadatas"]
+        )
+        
+        if not results["documents"]:
+            return ""
+
+        # Join the last 25 memories into one big text block for analysis
+        return " ".join(results["documents"])
+    except Exception as e:
+        print(f"⚠️ Sabbath Context Error: {e}")
+        return ""

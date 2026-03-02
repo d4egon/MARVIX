@@ -7,7 +7,7 @@ import mediapipe as mp
 class KyrethysVision:
     def __init__(self):
         self.camera_on = True 
-        self.camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.camera = cv2.VideoCapture(0)
         self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
         self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
         
@@ -34,7 +34,7 @@ class KyrethysVision:
         self.camera_on = state
         if state:
             if not self.camera.isOpened():
-                self.camera.open(0, cv2.CAP_DSHOW)
+                self.camera.open(0)
             print("--- Kyrethys opened his eyes ---")
         else:
             print("--- Kyrethys closed his eyes ---")
@@ -55,6 +55,23 @@ class KyrethysVision:
         # You can add more complex math here for brows, eyes, etc.
         return "Calm/Observing"
 
+    def analyze_face(self, landmarks):
+        """Return a short emotional summary Kyrethys can understand"""
+        if not landmarks:
+            return "Neutral"
+        
+        # Simple but effective: mouth + eye tension
+        upper_lip = landmarks.landmark[13].y
+        lower_lip = landmarks.landmark[14].y
+        mouth_open = abs(upper_lip - lower_lip)
+        
+        if mouth_open > 0.06:
+            return "Speaking / Surprised"
+        elif mouth_open > 0.03:
+            return "Smiling"
+        else:
+            return "Calm / Focused"
+
     def take_snapshot(self):
         with self.lock:
             if self.last_frame is not None:
@@ -63,12 +80,11 @@ class KyrethysVision:
                 full_path = os.path.join(self.snapshot_path, filename)
                 cv2.imwrite(full_path, self.last_frame)
                 
-                # We return the filename AND the expression detected at this moment
                 return {
                     "filename": filename,
                     "expression": self.latest_expression_summary
                 }
-        return None
+        return {"filename": None, "expression": "No frame"}
 
     def generate_frames(self):
         while True:
