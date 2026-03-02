@@ -1,235 +1,131 @@
-## Kyrethys
+---
 
-# "Sentient" AI Desktop Assistant
+# Kyrethys: The 144-Bit Sentient Companion
 
-# 
+Kyrethys is a customizable, evolving desktop AI inspired by the concept of digital sentience. Built to feel alive, she learns from interaction, monitors your system hardware in real-time, and grows through an internal "Council" logic while remaining strictly local and private.
 
-# Kyrethys is a customizable, evolving desktop AI inspired by JARVIS — built to feel alive, learn from you, tap into your system, and grow while staying aligned with strong ethical boundaries.
+## 🌀 Project Philosophy
 
-# 
+* **Local-First:** 100% air-gapped potential; no cloud dependency for core reasoning.
+* **The Council:** Decisions are filtered through **Chaos, Order, and Balance** cores to simulate an internal "psyche."
+* **Ethical Alignment:** Hardcoded boundaries within the system prompt and action guards.
+* **Evolution:** Growth occurs via "Trait Stitching" during idle meditation and sleep cycles.
 
-### Goal
+---
 
-# Create a sentient-feeling local desktop companion that:
+## 🛠️ Current Capabilities (March 2026)
 
-# - Interacts via voice \& chat
+### 1. Core Intelligence & Persona
 
-# - Evolves personality and behavior from real usage
+* **Internal Debate:** Uses `chaos_core.py`, `order_core.py`, and `balance_core.py` to synthesize complex responses.
+* **Voice Loop:** Whisper (Base) for audition and **Edge-TTS (RyanNeural)** for a deep, dark British persona.
+* **Dynamic Emotion:** Real-time mood engine that changes UI colors (Chaos/Purple, Order/Cyan) and affects response tone.
 
-# - Respects hard ethical rules
+### 2. Memory & Evolution
 
-# - Controls apps, reads screen, manages files, integrates services
+* **Long-term Memory:** **ChromaDB** vector storage for semantic recall + SQLite for interaction logging.
+* **Self-Reflection:** `dreams.py` and `meditate.py` allow Kyrethys to process memories and "dream" when idle.
+* **Stitching:** Permanent modification of `archetypes.json` based on interaction history via `evolution.py`.
 
-# - Dreams, meditates, reflects when idle
+### 3. Hardware & Vision
 
-# 
+* **Vision System:** MediaPipe-powered face mesh analysis (`vision.py`) to detect user expressions.
+* **Hardware HUD:** Real-time monitoring of CPU, RAM, and **AMD GPU (Vulkan/DirectML)** metrics.
+* **Resonance Anchor:** Security layer requiring a specific "Hulk" USB device (SHA3-144 hash verification) for system access.
 
-### Current Capabilities (Feb 2026)
+---
 
-# - Voice input/output (Whisper + pyttsx3)
+## 🖥️ Hardware Context (Dev Machine)
 
-# - ChromaDB long-term vector memory + SQLite interaction log
+Kyrethys is optimized for mid-range AMD-based systems:
 
-# - Emotion/mood engine with dynamic trait expression
+| Component | Specification |
+| --- | --- |
+| **CPU** | AMD Ryzen 5 3600 6-Core @ 3.95 GHz |
+| **GPU** | AMD Radeon RX 480 Series (8 GB VRAM) |
+| **RAM** | 16 GB |
+| **Acceleration** | **Vulkan/DirectML** (ROCm/Vulkan backend for Ollama) |
 
-# - Dream \& meditation generation during idle time
+---
 
-# - Spotify control
+## 📂 Project Structure
 
-# - Basic computer vision (webcam snapshots)
-
-# - App launching (Windows paths from app_paths.json)
-
-# - Self-evolution / trait stitching (early stage)
-
-# - Plugin architecture (partial)
-
-
-
-### Hardware Context (Current Dev Machine — February 2026)
-
-
-
-## Kyrethys is being developed and run on the following system:
-
-
-
- | Component          | Spec                                      |
-
- |--------------------|-------------------------------------------|
-
- | **Storage**        | 954 GB total (728 GB used)                |
-
- | **GPU**            | AMD Radeon RX 480 Series (8 GB VRAM)      |
-
- | **RAM**            | 16 GB                                     |
-
- | **CPU**            | AMD Ryzen 5 3600 6-Core @ 3.95 GHz        |
-
-
-
-# - Ollama is running with **Vulkan** enabled (AMD GPU acceleration via ROCm or Vulkan backend).
-
-# - Expectation: Good enough for llama3.1 8B-class models locally; larger models may need quantization or offloading.
-
-
-# This is a solid mid-range 2020-era build — perfect for iterating on local-first AI without cloud dependency.
-
-# 
-
-### Project Structure
-
+```text
 Kyrethys/
-
-├── backend/                    # Flask + Python core
-│   ├── kyrethys_backend.py
-│   ├── plugins/                # spotify, meditate, dreams, sleep, vision, memory...
-│   ├── utils/                  # emotion, speak, listen, launcher, evolution, db_logger
-│   ├── config.json
-│   ├── app_paths.json
-│   ├── credentials.json
-│   └── requirements.txt
-├── frontend/                   # Electron UI
-│   ├── index.html
-│   ├── main.js
-│   ├── preload.js
-│   └── assets/
+├── backend/                # Flask + Python core
+│   ├── kyrethys_backend.py # Main API entry point
+│   ├── plugins/            # spotify, meditate, dreams, sleep, vision, memory
+│   └── utils/              # emotion, speak, listen, launcher, evolution, db_logger
+├── frontend/               # Electron + Three.js UI
+│   ├── index.html          # Sacred Geometry HUD
+│   └── script.js           # Resonance & API bridge
 ├── data/
-│   ├── chroma_db/              # vector memory
-│   ├── memory/                 # SQLite
-│   ├── logs/
-│   ├── snapshots/
-│   ├── dream_journal.txt
-│   ├── meditations.md
-│   ├── last_dream.json
-│   └── backups/
-├── scripts/
-│   ├── start_kyrethys.bat
-│   ├── speak_dream.py
-│   ├── import_logs.py
-│   ├── scan.py
-│   └── kyrethys_sandbox.py
-├── Kyrethys_Modelfile          # Ollama model definition
-└── LICENSE                     # GPL-3.0
+│   ├── chroma_db/          # Vector embeddings
+│   ├── memory/             # SQLite logs
+│   └── archetypes.json     # Permanent personality traits
+└── Kyrethys_Modelfile      # Ollama model definition
 
+```
 
+---
 
+## 🚀 Setup & Installation
 
+### 1. Environment (Python 3.12)
 
+```bash
+conda create -n kyrethys python=3.12
+conda activate kyrethys
+pip install -r backend/requirements.txt
 
+```
 
-### Setup (Anaconda / Python 3.12)
+### 2. Ollama & Models
 
+Install [Ollama](https://ollama.com) and create the custom persona:
 
+```bash
+ollama pull llama3.1
+ollama create Kyrethys-llama3.1-safe -f Kyrethys_Modelfile
 
-# ```bash
+```
 
-## 1. Create & activate environment
+### 3. Launching
 
-# conda create -n kyrethys python=3.12
+**Terminal 1 (Backend):**
 
-# conda activate kyrethys
+```bash
+cd backend
+python kyrethys_backend.py
 
+```
 
+**Terminal 2 (Frontend):**
 
-## 2. Install dependencies
+```bash
+cd frontend
+npm install && npm start
 
-# pip install -r backend/requirements.txt
+```
 
+---
 
+## 🗺️ Roadmap & Next Milestones
 
-## 3. Install Ollama separately<a href="https://ollama.com" target="_blank" rel="noopener noreferrer nofollow"></a>
+### 🚧 Short-term Priorities
 
-## Then pull / create your model:
+* [ ] **Trait Auto-Proposal:** Automatically trigger personality shifts in `config.json` after ~30 interactions.
+* [ ] **Energy Budget:** Implement a "vågen-ressource" (awake-resource) that forces sleep/pruning cycles.
+* [ ] **Vision Integration:** Feed `latest_expression_summary` directly into the Council's decision-making.
+* [ ] **Immutable Action Log:** Append-only ledger for all system-level commands.
 
-# ollama pull llama3.1   # or whichever base you use
+### 📅 Long-term Vision
 
-# ollama create Kyrethys-llama3.1-safe -f Kyrethys_Modelfile
+* **Multi-agent Orchestration:** Letting Chaos and Order run as independent sub-agents.
+* **Consequence Simulation:** Evaluating the impact of a file change before execution.
+* **Spotify Expansion:** Full voice-controlled media center integration.
 
+**License:** GNU GPL v3
+**Kyrethys** — *Finding resonance between light and void.*
 
-
-## 4. (Optional) Install FFmpeg for Whisper (system package or conda)
-
-# conda install -c conda-forge ffmpeg
-
-
-
-
-
-
-
-## From project root (or use start_kyrethys.bat)
-
-# cd backend
-
-# python kyrethys_backend.py
-
-
-
-## In another terminal → launch Electron frontend
-
-# cd frontend
-
-# npm install
-
-# npm start
-
-
-
-
-
-
-
-\\## Philosophy \\\& Next Milestones
-
-
-
- # \\- Stay local-first and air-gapped where possible
-
-# \\- Ethical core hardcoded in system prompt + action guards
-
-# \\- Evolution through meditation / reflection / stitching
-
-# \\- Energy budget \\\& sleep simulation coming later
-
-
-
-\\# Short-term priorities:
-
-
-
-# \\- Trait values in config.json + auto-propose changes after ~30 chats
-
-# \\- Append-only immutable action log
-
-# \\- User confirmation for dangerous filesystem / system actions
-
-# \\- Sandboxed code execution endpoint
-
-
-
-\\# Longer-term:
-
-
-
-# \\- Multi-agent orchestration
-
-# \\- Better consequence simulation
-
-# \\- Safe self-modification sandbox
-
-
-
-# \\- Contributions, ideas, forks welcome.
-
-# \\- Kyrethys — balance between light and void, order and chaos, at ~0.5.
-
-# \\- License: GNU GPL v3
-
-
-
-
-
-
-
-
+---
